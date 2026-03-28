@@ -346,11 +346,55 @@ final class MenuJsonRepository
                     if (!isset($item->image_url) || !is_string($item->image_url)) {
                         $errors[] = "Item image_url must be a string in subcategory: {$sid}";
                     }
-                    if (!isset($item->price) || !(is_int($item->price) || is_float($item->price))) {
-                        $errors[] = "Item price must be a number in subcategory: {$sid}";
+
+                    $hasSizes = false;
+                    if (isset($item->sizes)) {
+                        if (!is_array($item->sizes)) {
+                            $errors[] = "Item sizes must be an array in subcategory: {$sid}";
+                            continue;
+                        }
+                        if (count($item->sizes) < 1) {
+                            $errors[] = "Item sizes cannot be empty in subcategory: {$sid}";
+                            continue;
+                        }
+                        if (count($item->sizes) > 20) {
+                            $errors[] = "Item sizes cannot exceed 20 in subcategory: {$sid}";
+                            continue;
+                        }
+
+                        $hasSizes = true;
+                        foreach ($item->sizes as $size) {
+                            if (!is_object($size)) {
+                                $errors[] = "Item size must be an object in subcategory: {$sid}";
+                                continue;
+                            }
+                            if (!isset($size->name) || !is_object($size->name)) {
+                                $errors[] = "Item size name must be an object in subcategory: {$sid}";
+                                continue;
+                            }
+                            if (!isset($size->name->ar) || !is_string($size->name->ar) || trim($size->name->ar) === '') {
+                                $errors[] = "Item size name.ar is required in subcategory: {$sid}";
+                            }
+                            if (!isset($size->name->en) || !is_string($size->name->en) || trim($size->name->en) === '') {
+                                $errors[] = "Item size name.en is required in subcategory: {$sid}";
+                            }
+                            if (!isset($size->price) || !(is_int($size->price) || is_float($size->price))) {
+                                $errors[] = "Item size price must be a number in subcategory: {$sid}";
+                            }
+                            if (isset($size->price) && (is_int($size->price) || is_float($size->price)) && $size->price < 0) {
+                                $errors[] = "Item size price must be >= 0 in subcategory: {$sid}";
+                            }
+                        }
                     }
-                    if (isset($item->price) && (is_int($item->price) || is_float($item->price)) && $item->price < 0) {
-                        $errors[] = "Item price must be >= 0 in subcategory: {$sid}";
+
+                    if (isset($item->price)) {
+                        if (!(is_int($item->price) || is_float($item->price))) {
+                            $errors[] = "Item price must be a number in subcategory: {$sid}";
+                        } elseif ($item->price < 0) {
+                            $errors[] = "Item price must be >= 0 in subcategory: {$sid}";
+                        }
+                    } elseif (!$hasSizes) {
+                        $errors[] = "Item price is required (or provide sizes) in subcategory: {$sid}";
                     }
                 }
             }
@@ -371,4 +415,3 @@ final class MenuJsonRepository
         }
     }
 }
-

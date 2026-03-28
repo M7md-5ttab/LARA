@@ -114,6 +114,21 @@ $username = (string) ($_SESSION['admin_username'] ?? 'admin');
           <span class="field-label">English name</span>
           <input class="field-input" name="name_en" type="text" required />
         </label>
+
+        <label class="check">
+          <input type="checkbox" id="item-has-sizes" />
+          <span>Enable sizes (e.g., Single/Double, Medium/Large)</span>
+        </label>
+
+        <div class="sizes" id="sizes-wrap" hidden>
+          <div class="sizes-head">
+            <strong>Sizes</strong>
+            <button class="btn btn-small btn-ghost" type="button" id="btn-add-size">+ Size</button>
+          </div>
+          <div class="sizes-list" id="sizes-list"></div>
+          <div class="sizes-hint">When sizes are enabled, the displayed price is taken from the selected size.</div>
+        </div>
+
         <label class="field">
           <span class="field-label">Price (LE)</span>
           <input class="field-input" name="price" type="number" step="0.01" min="0" required />

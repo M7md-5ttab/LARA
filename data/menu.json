@@ -185,83 +185,123 @@
                     "items": [
                         {
                             "name": {
-                                "ar": "بان كيك نوتيلا   { M - 12 }",
+                                "ar": "بان كيك نوتيلا",
                                 "en": "Nutella Pancakes"
                             },
                             "image_url": "assets/WhatsApp Image 2026-02-05 at 6.11.48 PM.jpeg",
-                            "price": 60
-                        },
-                        {
-                            "name": {
-                                "ar": "بان كيك نوتيلا   { L - 24 }",
-                                "en": "Nutella Pancakes"
-                            },
-                            "image_url": "assets/WhatsApp Image 2026-02-05 at 6.11.48 PM.jpeg",
-                            "price": 110
+                            "price": 60,
+                            "sizes": [
+                                {
+                                    "name": {
+                                        "ar": "M - 12",
+                                        "en": "M - 12"
+                                    },
+                                    "price": 60
+                                },
+                                {
+                                    "name": {
+                                        "ar": "L - 24",
+                                        "en": "L - 24"
+                                    },
+                                    "price": 110
+                                }
+                            ]
                         },
                         {
                             "name": {
                                 "ar": "بان كيك وايت شوكليت",
-                                "en": "{ M - 12 }"
+                                "en": "White Chocolate Pancakes"
                             },
                             "image_url": "assets/images/menu-placeholder.svg",
-                            "price": 60
-                        },
-                        {
-                            "name": {
-                                "ar": "بان كيك وايت شوكليت",
-                                "en": "{ L - 24 }"
-                            },
-                            "image_url": "assets/images/menu-placeholder.svg",
-                            "price": 110
+                            "price": 60,
+                            "sizes": [
+                                {
+                                    "name": {
+                                        "ar": "M - 12",
+                                        "en": "M - 12"
+                                    },
+                                    "price": 60
+                                },
+                                {
+                                    "name": {
+                                        "ar": "L - 24",
+                                        "en": "L - 24"
+                                    },
+                                    "price": 110
+                                }
+                            ]
                         },
                         {
                             "name": {
                                 "ar": "بان كيك ميكس شوكليت",
-                                "en": "{ M - 12 }"
+                                "en": "Mixed Chocolate Pancakes"
                             },
                             "image_url": "assets/WhatsApp Image 2026-01-22 at 6.10.41 PM.jpeg",
-                            "price": 70
-                        },
-                        {
-                            "name": {
-                                "ar": "بان كيك ميكس شوكليت",
-                                "en": "{ L - 24 }"
-                            },
-                            "image_url": "assets/WhatsApp Image 2026-01-22 at 6.10.41 PM.jpeg",
-                            "price": 115
+                            "price": 70,
+                            "sizes": [
+                                {
+                                    "name": {
+                                        "ar": "M - 12",
+                                        "en": "M - 12"
+                                    },
+                                    "price": 70
+                                },
+                                {
+                                    "name": {
+                                        "ar": "L - 24",
+                                        "en": "L - 24"
+                                    },
+                                    "price": 115
+                                }
+                            ]
                         },
                         {
                             "name": {
                                 "ar": "بان كيك فسدق",
-                                "en": "{ M - 12 }"
+                                "en": "Pistachio Pancakes"
                             },
                             "image_url": "assets/images/menu-placeholder.svg",
-                            "price": 75
-                        },
-                        {
-                            "name": {
-                                "ar": "بان كيك فسدق",
-                                "en": "{ L - 24 }"
-                            },
-                            "image_url": "assets/images/menu-placeholder.svg",
-                            "price": 125
+                            "price": 75,
+                            "sizes": [
+                                {
+                                    "name": {
+                                        "ar": "M - 12",
+                                        "en": "M - 12"
+                                    },
+                                    "price": 75
+                                },
+                                {
+                                    "name": {
+                                        "ar": "L - 24",
+                                        "en": "L - 24"
+                                    },
+                                    "price": 125
+                                }
+                            ]
                         },
                         {
                             "name": {
                                 "ar": "بان كيك لوتس",
-                                "en": "{ M - 12 }"
+                                "en": "Lotus Pancakes"
                             },
                             "image_url": "assets/images/menu-placeholder.svg",
-                            "price": 60
-                        },
-                        {
-                            "name": {
-                                "ar": "بان كيك لوتس",
-                                "en": "{ L - 24 }"
-                            },
-                            "image_url": "assets/images/menu-placeholder.svg",
-                            "price": 110
+                            "price": 60,
+                            "sizes": [
+                                {
+                                    "name": {
+                                        "ar": "M - 12",
+                                        "en": "M - 12"
+                                    },
+                                    "price": 60
+                                },
+                                {
+                                    "name": {
+                                        "ar": "L - 24",
+                                        "en": "L - 24"
+                                    },
+                                    "price": 110
+                                }
+                            ]
                         }
                     ]
                 }
@@ -277,19 +317,27 @@
                     "items": [
                         {
                             "name": {
-                                "ar": "قهوة تركي سنجل",
-                                "en": "Turkish Coffe ( S )"
+                                "ar": "قهوة تركي",
+                                "en": "Turkish Coffee"
                             },
                             "image_url": "assets/WhatsApp Image 2026-01-22 at 5.39.301 PM.jpeg",
-                            "price": 30
-                        },
-                        {
-                            "name": {
-                                "ar": "قهوة تركي دابل",
-                                "en": "Turkish Coffe ( D )"
-                            },
-                            "image_url": "assets/WhatsApp Image 2026-01-22 at 5.39.301 PM.jpeg",
-                            "price": 35
+                            "price": 30,
+                            "sizes": [
+                                {
+                                    "name": {
+                                        "ar": "سنجل",
+                                        "en": "Single"
+                                    },
+                                    "price": 30
+                                },
+                                {
+                                    "name": {
+                                        "ar": "دابل",
+                                        "en": "Double"
+                                    },
+                                    "price": 35
+                                }
+                            ]
                         },
                         {
                             "name": {
@@ -323,35 +371,51 @@
                     "items": [
                         {
                             "name": {
-                                "ar": "{ سنجل } اسبرسو",
-                                "en": "{ Single } Espresso"
+                                "ar": "اسبرسو",
+                                "en": "Espresso"
                             },
                             "image_url": "assets/WhatsApp Image 2026-02-07 at 7.40.03 PM.jpeg",
-                            "price": 45
+                            "price": 45,
+                            "sizes": [
+                                {
+                                    "name": {
+                                        "ar": "سنجل",
+                                        "en": "Single"
+                                    },
+                                    "price": 45
+                                },
+                                {
+                                    "name": {
+                                        "ar": "دابل",
+                                        "en": "Double"
+                                    },
+                                    "price": 50
+                                }
+                            ]
                         },
                         {
                             "name": {
-                                "ar": "{ دابل }اسبرسو",
-                                "en": "{ Double } Espresso"
-                            },
-                            "image_url": "assets/WhatsApp Image 2026-02-07 at 7.40.03 PM.jpeg",
-                            "price": 50
-                        },
-                        {
-                            "name": {
-                                "ar": "اسبرسو ميكاتو { سنجل }",
-                                "en": "{ S } Espresso Macchiato"
+                                "ar": "اسبرسو ميكاتو",
+                                "en": "Espresso Macchiato"
                             },
                             "image_url": "assets/images/menu-placeholder.svg",
-                            "price": 50
-                        },
-                        {
-                            "name": {
-                                "ar": "اسبرسو ميكاتو { دابل }",
-                                "en": "{ D } Espresso Macchiato"
-                            },
-                            "image_url": "assets/images/menu-placeholder.svg",
-                            "price": 55
+                            "price": 50,
+                            "sizes": [
+                                {
+                                    "name": {
+                                        "ar": "سنجل",
+                                        "en": "Single"
+                                    },
+                                    "price": 50
+                                },
+                                {
+                                    "name": {
+                                        "ar": "دابل",
+                                        "en": "Double"
+                                    },
+                                    "price": 55
+                                }
+                            ]
                         },
                         {
                             "name": {

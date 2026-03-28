@@ -88,10 +88,7 @@ function e(string $value): string
 
           <h2 class="headline-1 section-title">We Offer Top Notch</h2>
 
-          <p class="section-text">
-            Lorem Ipsum is simply dummy text of the printing and typesetting industry lorem Ipsum has been the industrys
-            standard dummy text ever.
-          </p>
+          <p class="section-text"></p>
 
           <ul class="grid-list">
 
@@ -197,7 +194,7 @@ function e(string $value): string
 
             <!-- Menu Grid -->
             <div class="menu-grid">
-                <?php foreach (($menu->filters ?? []) as $filter): ?>
+                  <?php foreach (($menu->filters ?? []) as $filter): ?>
                   <?php
                     $subcategoryId = (string) ($filter->id ?? '');
                     if ($subcategoryId === '' || $subcategoryId === 'all') {
@@ -213,15 +210,40 @@ function e(string $value): string
                       $imageUrl = (string) ($item->image_url ?? '');
                       $nameAr = (string) (($item->name->ar ?? '') ?? '');
                       $nameEn = (string) (($item->name->en ?? '') ?? '');
-                      $priceText = (string) ($item->price ?? 0);
+                      $sizes = $item->sizes ?? null;
+                      $hasSizes = is_array($sizes) && count($sizes) > 0;
+                      $basePrice = (string) ($item->price ?? 0);
+                      $defaultSizePrice = $hasSizes ? (string) (($sizes[0]->price ?? null) ?? 0) : $basePrice;
                     ?>
                     <div class="menu-item animate-on-scroll" data-category="<?= e($subcategoryId) ?>">
                       <img src="<?= e($imageUrl) ?>" alt="" class="menu-item-img">
                       <div class="menu-item-content">
                         <h3><?= e($nameAr) ?></h3>
                         <h3><?= e($nameEn) ?></h3>
+                        <?php if ($hasSizes): ?>
+                          <div class="menu-item-sizes">
+                            <select class="size-select" aria-label="Select size">
+                              <?php foreach ($sizes as $size): ?>
+                                <?php
+                                  $sizeNameAr = (string) (($size->name->ar ?? '') ?? '');
+                                  $sizeNameEn = (string) (($size->name->en ?? '') ?? '');
+                                  $sizePriceText = (string) (($size->price ?? null) ?? 0);
+                                  $sizeLabel = '';
+                                  if ($sizeNameAr !== '' && $sizeNameEn !== '' && $sizeNameAr !== $sizeNameEn) {
+                                    $sizeLabel = $sizeNameAr . ' / ' . $sizeNameEn;
+                                  } else {
+                                    $sizeLabel = $sizeNameEn !== '' ? $sizeNameEn : $sizeNameAr;
+                                  }
+                                ?>
+                                <option value="<?= e($sizePriceText) ?>" data-size-ar="<?= e($sizeNameAr) ?>" data-size-en="<?= e($sizeNameEn) ?>">
+                                  <?= e($sizeLabel) ?> (LE <?= e($sizePriceText) ?>)
+                                </option>
+                              <?php endforeach; ?>
+                            </select>
+                          </div>
+                        <?php endif; ?>
                         <div class="menu-item-footer">
-                          <span class="price"> LE  <?= e($priceText) ?></span>
+                          <span class="price" data-price="<?= e($defaultSizePrice) ?>"> LE  <?= e($defaultSizePrice) ?></span>
                           <button class="add-to-cart-btn">+</button>
                         </div>
                       </div>

@@ -239,6 +239,182 @@ nav a:hover::after {
   color: var(--secondary-color); 
 }
 
+.menu-item-sizes {
+  margin-top: .15rem;
+  position: relative;
+}
+
+.menu-item-sizes[data-enhanced="1"] .size-select {
+  position: absolute;
+  inset: auto;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.menu-item-sizes .size-trigger {
+  width: 100%;
+  padding: .6rem 2.2rem .6rem .9rem;
+  border-radius: 12px;
+  border: 1px solid rgba(116, 95, 39, 0.25);
+  background: linear-gradient(180deg, rgba(116, 95, 39, 0.08), rgba(0, 0, 0, 0.02));
+  color: var(--text-color);
+  font-family: var(--body-font);
+  font-size: .95rem;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease, transform .12s ease, box-shadow .2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+}
+
+.menu-item-sizes .size-trigger-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-item-sizes .size-trigger-price {
+  font-family: var(--header-font);
+  font-weight: 800;
+  color: var(--secondary-color);
+  white-space: nowrap;
+}
+
+.menu-item-sizes .size-select {
+  width: 100%;
+  padding: .6rem 2.2rem .6rem .9rem;
+  border-radius: 12px;
+  border: 1px solid rgba(116, 95, 39, 0.25);
+  background: linear-gradient(180deg, rgba(116, 95, 39, 0.08), rgba(0, 0, 0, 0.02));
+  color: var(--text-color);
+  font-family: var(--body-font);
+  font-size: .95rem;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease, transform .12s ease, box-shadow .2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.menu-item-sizes::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 7px solid var(--secondary-color);
+  transform: translateY(-20%);
+  pointer-events: none;
+  opacity: 0.9;
+  transition: transform .15s ease, opacity .2s ease;
+}
+
+.menu-item-sizes[data-open="1"]::after {
+  transform: translateY(-20%) rotate(180deg);
+  opacity: 1;
+}
+
+.menu-item-sizes .size-select:hover,
+.menu-item-sizes .size-trigger:hover {
+  border-color: rgba(116, 95, 39, 0.45);
+  background: linear-gradient(180deg, rgba(116, 95, 39, 0.12), rgba(0, 0, 0, 0.02));
+  transform: translateY(-1px);
+}
+
+.menu-item-sizes .size-select:focus,
+.menu-item-sizes .size-trigger:focus {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 4px rgba(116, 95, 39, 0.15);
+}
+
+.size-dropdown {
+  position: fixed;
+  z-index: 9999;
+  width: 280px;
+  max-width: calc(100vw - 24px);
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid rgba(116, 95, 39, 0.22);
+  border-radius: 14px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+  padding: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.size-dropdown[hidden] { display: none; }
+
+.size-dropdown-list {
+  display: grid;
+  gap: 6px;
+  max-height: 260px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.size-dd-option {
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 12px;
+  padding: 10px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: background .18s ease, border-color .18s ease, transform .12s ease;
+  text-align: left;
+}
+
+.size-dd-option:hover {
+  background: rgba(116, 95, 39, 0.08);
+  border-color: rgba(116, 95, 39, 0.22);
+  transform: translateY(-1px);
+}
+
+.size-dd-option:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(116, 95, 39, 0.15);
+  border-color: rgba(116, 95, 39, 0.35);
+}
+
+.size-dd-option[aria-selected="true"] {
+  background: rgba(116, 95, 39, 0.14);
+  border-color: rgba(116, 95, 39, 0.35);
+}
+
+.size-dd-name {
+  font-family: var(--body-font);
+  font-weight: 700;
+  color: var(--text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.size-dd-price {
+  font-family: var(--header-font);
+  font-weight: 900;
+  color: var(--secondary-color);
+  white-space: nowrap;
+}
+
 .menu-item p { 
   font-size: .95rem; 
   color:#555; 

@@ -80,24 +80,75 @@ try {
             if ($imageUrlLower !== '' && (str_starts_with($imageUrlLower, 'javascript:') || str_starts_with($imageUrlLower, 'vbscript:') || str_starts_with($imageUrlLower, 'data:'))) {
                 throw new RuntimeException('Invalid image URL scheme.');
             }
-            $price = $data['price'] ?? null;
-            $priceNum = is_numeric($price) ? (float) $price : null;
 
             if ($nameAr === '' || $nameEn === '') {
                 throw new RuntimeException('Item name (ar/en) is required.');
             }
-            if ($priceNum === null || $priceNum < 0) {
-                throw new RuntimeException('Item price must be a number >= 0.');
+
+            $sanitizeNumber = static function ($value, string $label): int|float {
+                if (!is_numeric($value)) {
+                    throw new RuntimeException("{$label} must be a number >= 0.");
+                }
+                $num = (float) $value;
+                if ($num < 0) {
+                    throw new RuntimeException("{$label} must be a number >= 0.");
+                }
+                // Keep integers as ints to match existing JSON style.
+                return (abs($num - (int) $num) < 1e-9) ? (int) $num : $num;
+            };
+
+            $sizesRaw = $data['sizes'] ?? null;
+            $sizesOut = [];
+            if (is_array($sizesRaw)) {
+                if (count($sizesRaw) > 20) {
+                    throw new RuntimeException('Item sizes cannot exceed 20.');
+                }
+                foreach ($sizesRaw as $idx => $sizeRaw) {
+                    if (!is_array($sizeRaw)) {
+                        throw new RuntimeException('Each size must be an object.');
+                    }
+                    $sizeName = $sizeRaw['name'] ?? null;
+                    $sizeAr = '';
+                    $sizeEn = '';
+                    if (is_array($sizeName)) {
+                        $sizeAr = trim((string) ($sizeName['ar'] ?? ''));
+                        $sizeEn = trim((string) ($sizeName['en'] ?? ''));
+                    } else {
+                        $sizeAr = trim((string) ($sizeRaw['name_ar'] ?? ''));
+                        $sizeEn = trim((string) ($sizeRaw['name_en'] ?? ''));
+                    }
+
+                    if ($sizeAr === '' || $sizeEn === '') {
+                        throw new RuntimeException('Each size name (ar/en) is required.');
+                    }
+
+                    $sizesOut[] = (object) [
+                        'name' => (object) ['ar' => $sizeAr, 'en' => $sizeEn],
+                        'price' => $sanitizeNumber($sizeRaw['price'] ?? null, 'Size price'),
+                    ];
+                }
             }
 
-            // Keep integers as ints to match existing JSON style.
-            $priceOut = (abs($priceNum - (int) $priceNum) < 1e-9) ? (int) $priceNum : $priceNum;
+            $hasSizes = count($sizesOut) > 0;
 
-            return (object) [
+            $item = (object) [
                 'name' => (object) ['ar' => $nameAr, 'en' => $nameEn],
                 'image_url' => $imageUrl,
-                'price' => $priceOut,
             ];
+
+            if ($hasSizes) {
+                $min = null;
+                foreach ($sizesOut as $s) {
+                    $p = (float) $s->price;
+                    $min = ($min === null) ? $p : min($min, $p);
+                }
+                $item->price = (abs($min - (int) $min) < 1e-9) ? (int) $min : $min;
+                $item->sizes = $sizesOut;
+                return $item;
+            }
+
+            $item->price = $sanitizeNumber($data['price'] ?? null, 'Item price');
+            return $item;
         };
 
         $sanitizeId = static function (string $id): string {

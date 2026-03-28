@@ -64,6 +64,234 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  /* Custom dropdown for size selects (keeps the <select>, but renders a custom options panel) */
+  const enhanceSizeSelects = () => {
+    const selects = Array.from(document.querySelectorAll('.size-select'));
+    if (!selects.length) return;
+
+    let dropdown = document.getElementById('size-dropdown');
+    if (!dropdown) {
+      dropdown = document.createElement('div');
+      dropdown.id = 'size-dropdown';
+      dropdown.className = 'size-dropdown';
+      dropdown.hidden = true;
+      dropdown.innerHTML = `<div class="size-dropdown-list" role="listbox" tabindex="-1"></div>`;
+      document.body.appendChild(dropdown);
+    }
+
+    const listEl = dropdown.querySelector('.size-dropdown-list');
+    let activeSelect = null;
+    let activeTrigger = null;
+    let activeWrap = null;
+
+    const computeLabel = (opt) => {
+      const ar = (opt?.dataset?.sizeAr || '').trim();
+      const en = (opt?.dataset?.sizeEn || '').trim();
+      if (ar && en && ar !== en) return `${ar} / ${en}`;
+      return en || ar || (opt?.textContent || '').trim();
+    };
+
+    const updateTrigger = (select) => {
+      const trigger = select?._sizeTrigger || null;
+      if (!trigger) return;
+      const opt = select.selectedOptions?.[0] || select.options?.[select.selectedIndex] || null;
+      const nameEl = trigger.querySelector('.size-trigger-name');
+      const priceEl = trigger.querySelector('.size-trigger-price');
+      const label = computeLabel(opt);
+      const price = (opt?.value || '').trim();
+      if (nameEl) nameEl.textContent = label || 'Select';
+      if (priceEl) priceEl.textContent = price ? `LE ${price}` : '';
+    };
+
+    const closeDropdown = () => {
+      if (!activeSelect) return;
+      dropdown.hidden = true;
+      dropdown.style.left = '';
+      dropdown.style.top = '';
+      dropdown.style.width = '';
+      if (activeTrigger) activeTrigger.setAttribute('aria-expanded', 'false');
+      if (activeWrap) delete activeWrap.dataset.open;
+      activeSelect = null;
+      activeTrigger = null;
+      activeWrap = null;
+      listEl.textContent = '';
+    };
+
+    const openDropdown = (select, trigger) => {
+      if (!select || !trigger) return;
+      if (!listEl) return;
+
+      if (activeSelect === select && !dropdown.hidden) {
+        closeDropdown();
+        return;
+      }
+
+      const nextWrap = select.closest?.('.menu-item-sizes') || null;
+      if (activeWrap && activeWrap !== nextWrap) delete activeWrap.dataset.open;
+      activeWrap = nextWrap;
+      if (activeWrap) activeWrap.dataset.open = '1';
+
+      activeSelect = select;
+      activeTrigger = trigger;
+      trigger.setAttribute('aria-expanded', 'true');
+
+      listEl.textContent = '';
+      const opts = Array.from(select.options || []);
+      opts.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'size-dd-option';
+        btn.setAttribute('role', 'option');
+        btn.dataset.index = String(idx);
+        const selected = idx === select.selectedIndex;
+        btn.setAttribute('aria-selected', selected ? 'true' : 'false');
+
+        const label = computeLabel(opt);
+        const price = (opt?.value || '').trim();
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'size-dd-name';
+        nameSpan.textContent = label;
+
+        const priceSpan = document.createElement('span');
+        priceSpan.className = 'size-dd-price';
+        priceSpan.textContent = price ? `LE ${price}` : '';
+
+        btn.appendChild(nameSpan);
+        btn.appendChild(priceSpan);
+
+        btn.addEventListener('click', () => {
+          select.selectedIndex = idx;
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+          updateTrigger(select);
+          closeDropdown();
+        });
+
+        listEl.appendChild(btn);
+      });
+
+      dropdown.hidden = false;
+
+      const r = trigger.getBoundingClientRect();
+      dropdown.style.width = `${Math.max(220, r.width)}px`;
+      dropdown.style.left = `${Math.max(12, Math.min(r.left, window.innerWidth - (parseFloat(dropdown.style.width) || r.width) - 12))}px`;
+      dropdown.style.top = `${Math.max(12, r.bottom + 8)}px`;
+
+      // Flip up if needed (after layout)
+      requestAnimationFrame(() => {
+        const dr = dropdown.getBoundingClientRect();
+        if (dr.bottom > window.innerHeight - 12) {
+          const upTop = r.top - dr.height - 8;
+          if (upTop >= 12) dropdown.style.top = `${upTop}px`;
+        }
+      });
+
+      // Focus selected option for keyboard users
+      const selectedBtn = listEl.querySelector('.size-dd-option[aria-selected="true"]');
+      (selectedBtn || listEl.querySelector('.size-dd-option'))?.focus?.();
+    };
+
+    // Close on outside click / escape / scroll / resize
+    document.addEventListener('click', (e) => {
+      if (dropdown.hidden) return;
+      const t = e.target;
+      if (!(t instanceof Node)) return;
+      const inside = dropdown.contains(t) || (activeTrigger && activeTrigger.contains(t));
+      if (!inside) closeDropdown();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeDropdown();
+      if (dropdown.hidden) return;
+
+      if (!dropdown.contains(document.activeElement)) return;
+
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        const items = Array.from(listEl.querySelectorAll('.size-dd-option'));
+        if (!items.length) return;
+        const activeEl = document.activeElement;
+        const idx = items.indexOf(activeEl);
+        const next = e.key === 'ArrowDown'
+          ? items[Math.min(items.length - 1, Math.max(0, idx) + 1)]
+          : items[Math.max(0, (idx >= 0 ? idx : 0) - 1)];
+        next?.focus?.();
+        e.preventDefault();
+      }
+    });
+    window.addEventListener('resize', closeDropdown);
+    window.addEventListener('scroll', closeDropdown, true);
+
+    // Create triggers for each select
+    selects.forEach((select) => {
+      if (select.dataset.customized === '1') return;
+
+      const wrap = select.closest('.menu-item-sizes');
+      if (wrap) wrap.dataset.enhanced = '1';
+
+      const trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'size-trigger';
+      trigger.setAttribute('aria-haspopup', 'listbox');
+      trigger.setAttribute('aria-expanded', 'false');
+      trigger.innerHTML = `<span class="size-trigger-name"></span><span class="size-trigger-price"></span>`;
+
+      select.insertAdjacentElement('afterend', trigger);
+      select._sizeTrigger = trigger;
+
+      updateTrigger(select);
+      select.addEventListener('change', () => updateTrigger(select));
+
+      trigger.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        openDropdown(select, trigger);
+      });
+      trigger.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowDown') {
+          ev.preventDefault();
+          openDropdown(select, trigger);
+        }
+      });
+
+      select.dataset.customized = '1';
+    });
+  };
+
+  enhanceSizeSelects();
+
+  /* Sizes (items with variants) */
+  document.querySelectorAll('.menu-item').forEach(itemEl => {
+    const priceEl = itemEl.querySelector('.price');
+
+    const sizeOptions = itemEl.querySelector('.size-options');
+    if (sizeOptions) {
+      const applySize = () => {
+        const checked = sizeOptions.querySelector('input[type="radio"]:checked');
+        if (!checked || !priceEl) return;
+        const priceText = (checked.value || '').trim();
+        if (!priceText) return;
+        priceEl.dataset.price = priceText;
+        priceEl.textContent = ' LE  ' + priceText;
+      };
+      sizeOptions.addEventListener('change', applySize);
+      applySize();
+      return;
+    }
+
+    // Backward-compat (in case any item still uses a select)
+    const sizeSelect = itemEl.querySelector('.size-select');
+    if (!sizeSelect) return;
+    const applySize = () => {
+      const opt = sizeSelect.selectedOptions?.[0] || null;
+      if (!opt || !priceEl) return;
+      const priceText = (opt.value || '').trim();
+      if (!priceText) return;
+      priceEl.dataset.price = priceText;
+      priceEl.textContent = ' LE  ' + priceText;
+    };
+    sizeSelect.addEventListener('change', applySize);
+    applySize();
+  });
+
   /* Cart State */
   const cart = [];
   const cartToggle = document.getElementById('cart-toggle');
@@ -177,7 +405,23 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
     btn.addEventListener('click', e => {
       const itemEl = e.target.closest('.menu-item');
-      const name = itemEl.querySelector('h3').textContent.trim();
+      const baseName = itemEl.querySelector('h3')?.textContent?.trim() || '';
+      let name = baseName;
+
+      const sizeOptions = itemEl.querySelector?.('.size-options') || null;
+      if (sizeOptions) {
+        const checked = sizeOptions.querySelector('input[type="radio"]:checked');
+        const sizeLabel = (checked?.dataset?.sizeEn || checked?.dataset?.sizeAr || '').trim();
+        if (sizeLabel) name = `${baseName} (${sizeLabel})`;
+      } else {
+        const sizeSelect = itemEl.querySelector?.('.size-select') || null;
+        if (sizeSelect) {
+          const opt = sizeSelect.selectedOptions?.[0] || null;
+          const sizeLabel = (opt?.dataset?.sizeEn || opt?.dataset?.sizeAr || '').trim();
+          if (sizeLabel) name = `${baseName} (${sizeLabel})`;
+        }
+      }
+
       const priceEl = itemEl.querySelector('.price');
       const price = priceEl?.dataset?.price ?
         parseFloat(priceEl.dataset.price) :

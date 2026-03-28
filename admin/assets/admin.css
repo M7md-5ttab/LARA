@@ -17,6 +17,14 @@
 html, body { height: 100%; }
 body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color: var(--text); }
 
+body.modal-open {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
 .admin-body {
   background:
     radial-gradient(1200px 600px at 20% 10%, rgba(215, 179, 106, 0.18), transparent 55%),
@@ -295,18 +303,23 @@ body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial
 .empty p { margin: 0 0 12px; color: var(--muted); }
 
 /* Modal */
-.modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 18px; }
+.modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: start center; padding: 18px; overflow: hidden; }
 .modal[hidden] { display: none; }
 .modal-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.55); }
 .modal-card {
   position: relative;
   width: min(640px, 100%);
+  max-height: calc(100vh - 36px);
+  max-height: calc(100dvh - 36px);
+  min-height: 0;
   background: rgba(15, 23, 42, 0.88);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   backdrop-filter: blur(12px);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 .modal-head {
   display: flex;
@@ -319,13 +332,63 @@ body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial
 }
 .modal-title { font-weight: 900; }
 .modal-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
-.modal-body { padding: 14px; display: grid; gap: 12px; }
+.modal-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
+.modal-body > * { flex-shrink: 0; }
 .modal-actions { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
 .spacer { flex: 1; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .image-preview { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: rgba(255, 255, 255, 0.03); }
-.image-preview img { width: 100%; height: 180px; object-fit: cover; display: block; }
+.image-preview img {
+  width: 100%;
+  height: clamp(200px, 32vh, 340px);
+  height: clamp(200px, 32dvh, 340px);
+  object-fit: cover;
+  display: block;
+}
 .image-preview-actions { display: flex; gap: 10px; padding: 10px; border-top: 1px solid var(--border); justify-content: flex-end; }
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+}
+.check input { width: 18px; height: 18px; accent-color: rgba(215, 179, 106, 0.95); }
+.check span { font-size: 13px; color: var(--text); }
+
+.sizes {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+.sizes-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.sizes-list { display: grid; gap: 10px; }
+.sizes-hint { font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+.size-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 120px 40px;
+  gap: 10px;
+  align-items: center;
+}
+.size-row .icon-btn { width: 40px; height: 40px; border-radius: 12px; font-size: 20px; }
 
 .icon-btn {
   width: 40px;
@@ -369,6 +432,14 @@ body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial
   .dash-header { flex-direction: column; align-items: flex-start; gap: 10px; }
   .grid-2 { grid-template-columns: 1fr; }
   .table th:nth-child(2), .table td:nth-child(2) { display: none; } /* hide Arabic column on very small screens */
+  .size-row { grid-template-columns: 1fr; }
+  .size-row .icon-btn { justify-self: end; }
+
+  .modal { padding: 12px; }
+  .modal-card {
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+  }
 }
 
 .auth-footer { margin-top: 14px; color: var(--muted); text-align: center; }

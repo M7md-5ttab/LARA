@@ -27,6 +27,10 @@
   const itemImagePreview = document.getElementById('item-image-preview');
   const itemSaveBtn = document.getElementById('item-save-btn');
   const btnImageRemove = document.getElementById('btn-image-remove');
+  const itemHasSizes = document.getElementById('item-has-sizes');
+  const sizesWrap = document.getElementById('sizes-wrap');
+  const sizesList = document.getElementById('sizes-list');
+  const btnAddSize = document.getElementById('btn-add-size');
 
   const subModal = document.getElementById('subcategory-modal');
   const subForm = document.getElementById('subcategory-form');
@@ -47,6 +51,102 @@
 
   const PLACEHOLDER_IMAGE_URL = 'assets/images/menu-placeholder.svg';
   let itemPreviewObjectUrl = null;
+  let modalOpenCount = 0;
+  let lockedScrollY = 0;
+
+  const lockPageScroll = () => {
+    if (modalOpenCount === 0) {
+      lockedScrollY = window.scrollY || 0;
+      const scrollbarComp = Math.max(0, window.innerWidth - document.documentElement.clientWidth);
+      document.body.classList.add('modal-open');
+      document.body.style.top = `-${lockedScrollY}px`;
+      if (scrollbarComp > 0) document.body.style.paddingRight = `${scrollbarComp}px`;
+    }
+    modalOpenCount += 1;
+  };
+
+  const unlockPageScroll = () => {
+    modalOpenCount = Math.max(0, modalOpenCount - 1);
+    if (modalOpenCount !== 0) return;
+    const y = lockedScrollY;
+    document.body.classList.remove('modal-open');
+    document.body.style.top = '';
+    document.body.style.paddingRight = '';
+    window.scrollTo(0, y);
+  };
+
+  const sizeRow = (size = null) => {
+    const row = el('div', { class: 'size-row' },
+      el('input', {
+        class: 'field-input',
+        type: 'text',
+        placeholder: 'Arabic size name',
+        value: size?.name?.ar || '',
+        dataset: { role: 'size-ar' },
+      }),
+      el('input', {
+        class: 'field-input',
+        type: 'text',
+        placeholder: 'English size name',
+        value: size?.name?.en || '',
+        dataset: { role: 'size-en' },
+      }),
+      el('input', {
+        class: 'field-input',
+        type: 'number',
+        step: '0.01',
+        min: '0',
+        placeholder: 'Price',
+        value: (size?.price ?? '') === 0 ? '0' : (size?.price ?? ''),
+        dataset: { role: 'size-price' },
+      }),
+      el('button', {
+        type: 'button',
+        class: 'icon-btn icon-btn-sm',
+        title: 'Remove size',
+        'aria-label': 'Remove size',
+        onClick: () => row.remove(),
+      }, '×'),
+    );
+    return row;
+  };
+
+  const setSizesEnabled = (enabled) => {
+    if (!itemHasSizes || !sizesWrap || !itemForm?.elements?.price) return;
+    itemHasSizes.checked = !!enabled;
+    sizesWrap.hidden = !enabled;
+    itemForm.elements.price.disabled = !!enabled;
+    if (enabled) {
+      itemForm.elements.price.value = '';
+      itemForm.elements.price.removeAttribute('required');
+      if (sizesList && sizesList.children.length === 0) sizesList.appendChild(sizeRow());
+    } else {
+      itemForm.elements.price.disabled = false;
+      itemForm.elements.price.setAttribute('required', 'required');
+      if (sizesList) sizesList.textContent = '';
+    }
+  };
+
+  const readSizes = () => {
+    if (!sizesList) return [];
+    const rows = Array.from(sizesList.querySelectorAll('.size-row'));
+    const out = [];
+    for (const row of rows) {
+      const ar = row.querySelector('[data-role="size-ar"]')?.value?.trim() || '';
+      const en = row.querySelector('[data-role="size-en"]')?.value?.trim() || '';
+      const priceRaw = row.querySelector('[data-role="size-price"]')?.value ?? '';
+      const priceStr = String(priceRaw).trim();
+
+      if (ar === '' && en === '' && priceStr === '') continue; // ignore empty row
+      if (ar === '' || en === '') throw new Error('Each size name (ar/en) is required.');
+      if (priceStr === '' || Number.isNaN(Number(priceStr)) || Number(priceStr) < 0) throw new Error('Each size price must be a number >= 0.');
+
+      out.push({ name: { ar, en }, price: Number(priceStr) });
+    }
+    if (out.length > 20) throw new Error('Item sizes cannot exceed 20.');
+    if (out.length === 0) throw new Error('Add at least one size.');
+    return out;
+  };
 
   const showToast = (msg, type = 'info') => {
     if (!toastEl) return;
@@ -252,7 +352,15 @@
       const imgSrc = imgUrl || '/assets/images/menu-placeholder.svg';
       const nameAr = item?.name?.ar || '';
       const nameEn = item?.name?.en || '';
+      const sizes = Array.isArray(item?.sizes) ? item.sizes : [];
       const price = item?.price ?? 0;
+
+      let priceText = String(price);
+      if (sizes.length > 0) {
+        const prices = sizes.map(s => Number(s?.price)).filter(n => Number.isFinite(n));
+        const min = prices.length ? Math.min(...prices) : Number(price);
+        priceText = Number.isFinite(min) ? `From ${min}` : 'From 0';
+      }
 
       const img = el('img', { class: 'thumb', src: imgSrc, alt: '' });
       img.addEventListener('error', () => {
@@ -285,7 +393,7 @@
         el('td', {}, img),
         el('td', {}, nameAr),
         el('td', {}, nameEn),
-        el('td', { class: 't-right' }, String(price)),
+        el('td', { class: 't-right' }, priceText),
         el('td', { class: 't-right' }, actions),
       );
 
@@ -296,13 +404,15 @@
   const openModal = (modalEl) => {
     if (!modalEl) return;
     modalEl.hidden = false;
-    document.documentElement.classList.add('modal-open');
+    lockPageScroll();
+    const body = modalEl.querySelector?.('.modal-body');
+    if (body) body.scrollTop = 0;
   };
 
   const closeModal = (modalEl) => {
     if (!modalEl) return;
     modalEl.hidden = true;
-    document.documentElement.classList.remove('modal-open');
+    unlockPageScroll();
 
     if (modalEl === itemModal && itemPreviewObjectUrl) {
       URL.revokeObjectURL(itemPreviewObjectUrl);
@@ -318,6 +428,7 @@
       itemPreviewObjectUrl = null;
     }
     setItemPreview(PLACEHOLDER_IMAGE_URL);
+    setSizesEnabled(false);
 
     const { subcategory } = findSubcategoryLocation(state.menu, subcategoryId);
     const subLabel = subcategory?.label || subcategoryId;
@@ -330,6 +441,15 @@
       itemForm.elements.price.value = String(item?.price ?? '');
       itemForm.elements.image_url.value = item?.image_url || '';
       setItemPreview(item?.image_url || PLACEHOLDER_IMAGE_URL);
+
+      const sizes = Array.isArray(item?.sizes) ? item.sizes : [];
+      if (sizes.length > 0) {
+        setSizesEnabled(true);
+        if (sizesList) {
+          sizesList.textContent = '';
+          sizes.forEach(s => sizesList.appendChild(sizeRow(s)));
+        }
+      }
     }
 
     openModal(itemModal);
@@ -459,9 +579,11 @@
   });
 
   itemImagePreview?.addEventListener('error', () => {
+    const fallback = '/assets/images/menu-placeholder.svg';
+    if ((itemImagePreview.getAttribute('src') || '').endsWith('menu-placeholder.svg')) return;
     if (itemImagePreview.dataset.fallbackApplied === 'true') return;
     itemImagePreview.dataset.fallbackApplied = 'true';
-    itemImagePreview.src = '/assets/images/menu-placeholder.svg';
+    itemImagePreview.src = fallback;
   });
 
   itemForm?.elements.image_file?.addEventListener('change', () => {
@@ -469,7 +591,7 @@
     if (!file) return;
     if (itemPreviewObjectUrl) URL.revokeObjectURL(itemPreviewObjectUrl);
     itemPreviewObjectUrl = URL.createObjectURL(file);
-    itemImagePreview.dataset.fallbackApplied = 'true';
+    itemImagePreview.dataset.fallbackApplied = 'false';
     itemImagePreview.src = itemPreviewObjectUrl;
   });
 
@@ -482,6 +604,15 @@
     itemForm.elements.image_url.value = PLACEHOLDER_IMAGE_URL;
     setItemPreview(PLACEHOLDER_IMAGE_URL);
     showToast('Image removed (placeholder set)', 'ok');
+  });
+
+  itemHasSizes?.addEventListener('change', () => {
+    setSizesEnabled(itemHasSizes.checked);
+  });
+
+  btnAddSize?.addEventListener('click', () => {
+    if (!sizesList) return;
+    sizesList.appendChild(sizeRow());
   });
 
   itemForm?.addEventListener('submit', async (e) => {
@@ -504,7 +635,11 @@
         setItemPreview(imageUrl);
       }
 
-      const item = { name: { ar: nameAr, en: nameEn }, price: Number(price), image_url: imageUrl };
+      const sizesEnabled = !!itemHasSizes?.checked;
+      const item = { name: { ar: nameAr, en: nameEn }, image_url: imageUrl };
+      if (sizesEnabled) item.sizes = readSizes();
+      else item.price = Number(price);
+
       if (mode === 'edit') {
         state.menu = await apiAction('update_item', { subcategory_id: subcategoryId, item_index: itemIndex, item });
         showToast('Item updated', 'ok');
