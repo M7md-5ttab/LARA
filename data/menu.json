@@ -1,0 +1,1559 @@
+{
+  "version": 1,
+  "filters": [
+    {
+      "id": "all",
+      "label": "All"
+    },
+    {
+      "id": "coffee",
+      "label": "Coffee"
+    },
+    {
+      "id": "espersso",
+      "label": "Espersso"
+    },
+    {
+      "id": "hotdrinks",
+      "label": "Hot Drinks"
+    },
+    {
+      "id": "soda",
+      "label": "Mojito"
+    },
+    {
+      "id": "icedcoffee",
+      "label": "Iced Coffee"
+    },
+    {
+      "id": "milkshake",
+      "label": "Milk Shake"
+    },
+    {
+      "id": "icedtea",
+      "label": "Iced Tea"
+    },
+    {
+      "id": "juices",
+      "label": "Juices"
+    },
+    {
+      "id": "smoothie",
+      "label": "Smoothie"
+    },
+    {
+      "id": "frappe",
+      "label": "Frappe"
+    },
+    {
+      "id": "waffles",
+      "label": "Waffles"
+    },
+    {
+      "id": "tiyaki",
+      "label": "Tiyaki"
+    },
+    {
+      "id": "pancakes",
+      "label": "PanCakes"
+    },
+    {
+      "id": "sunday",
+      "label": "Sunday"
+    },
+    {
+      "id": "dessert",
+      "label": "Dessert"
+    },
+    {
+      "id": "sparklingwater",
+      "label": "Soft Drink"
+    },
+    {
+      "id": "additions",
+      "label": "Additions"
+    }
+  ],
+  "categories": [
+    {
+      "id": "breakfast",
+      "label": "Breakfast",
+      "subcategories": [
+        {
+          "id": "waffles",
+          "label": "Waffles",
+          "items": [
+            {
+              "name": {
+                "ar": "وافل نوتيلا",
+                "en": "Nutella Waffle"
+              },
+              "image_url": "assets/WhatsApp Image 2026-02-05 at 6.12.02 PM.jpeg",
+              "price": 65
+            },
+            {
+              "name": {
+                "ar": "وافل وايت شوكليت",
+                "en": "White Chocolate Waffle"
+              },
+              "image_url": "assets/WhatsApp Image 2026-02-05 at 6.12.02 PM.jpeg",
+              "price": 65
+            },
+            {
+              "name": {
+                "ar": "وافل ميكس شوكليت",
+                "en": "Mixed Chocolate Waffle"
+              },
+              "image_url": "assets/WhatsApp Image 2026-01-22 at 6.09.34 PM.jpeg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "وافل فسدق",
+                "en": "Pistachio Waffle"
+              },
+              "image_url": "assets/WhatsApp Image 2026-02-05 at 6.12.02 PM.jpeg",
+              "price": 90
+            },
+            {
+              "name": {
+                "ar": "وافل لوتس",
+                "en": "Lotus Waffle"
+              },
+              "image_url": "assets/WhatsApp Image 2026-02-05 at 6.12.02 PM.jpeg",
+              "price": 65
+            },
+            {
+              "name": {
+                "ar": "وافل اسبيشيال",
+                "en": "Special Waffle"
+              },
+              "image_url": "assets/WhatsApp Image 2026-02-05 at 6.12.02 PM.jpeg",
+              "price": 105
+            }
+          ]
+        },
+        {
+          "id": "tiyaki",
+          "label": "Tiyaki",
+          "items": [
+            {
+              "name": {
+                "ar": "تياكي نوتيلا",
+                "en": "Nutella Tiyaki"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 75
+            },
+            {
+              "name": {
+                "ar": "تياكي وايت شوكليت",
+                "en": "White Chocolate Tiyaki"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 75
+            },
+            {
+              "name": {
+                "ar": "تياكي مكس شوكليت",
+                "en": "Mixed Chocolate Tiyaki"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 85
+            },
+            {
+              "name": {
+                "ar": "تياكي فسدق",
+                "en": "Pistachio Tiyaki"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 85
+            },
+            {
+              "name": {
+                "ar": "تياكي لوتس",
+                "en": "Lotus Tiyaki"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 75
+            }
+          ]
+        },
+        {
+          "id": "pancakes",
+          "label": "PanCakes",
+          "items": [
+            {
+              "name": {
+                "ar": "بان كيك نوتيلا   { M - 12 }",
+                "en": "Nutella Pancakes"
+              },
+              "image_url": "assets/WhatsApp Image 2026-02-05 at 6.11.48 PM.jpeg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "بان كيك نوتيلا   { L - 24 }",
+                "en": "Nutella Pancakes"
+              },
+              "image_url": "assets/WhatsApp Image 2026-02-05 at 6.11.48 PM.jpeg",
+              "price": 110
+            },
+            {
+              "name": {
+                "ar": "بان كيك وايت شوكليت",
+                "en": "{ M - 12 }"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "بان كيك وايت شوكليت",
+                "en": "{ L - 24 }"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 110
+            },
+            {
+              "name": {
+                "ar": "بان كيك ميكس شوكليت",
+                "en": "{ M - 12 }"
+              },
+              "image_url": "assets/WhatsApp Image 2026-01-22 at 6.10.41 PM.jpeg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "بان كيك ميكس شوكليت",
+                "en": "{ L - 24 }"
+              },
+              "image_url": "assets/WhatsApp Image 2026-01-22 at 6.10.41 PM.jpeg",
+              "price": 115
+            },
+            {
+              "name": {
+                "ar": "بان كيك فسدق",
+                "en": "{ M - 12 }"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 75
+            },
+            {
+              "name": {
+                "ar": "بان كيك فسدق",
+                "en": "{ L - 24 }"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 125
+            },
+            {
+              "name": {
+                "ar": "بان كيك لوتس",
+                "en": "{ M - 12 }"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "بان كيك لوتس",
+                "en": "{ L - 24 }"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 110
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "drinks",
+      "label": "Drinks",
+      "subcategories": [
+        {
+          "id": "coffee",
+          "label": "Coffee",
+          "items": [
+            {
+              "name": {
+                "ar": "قهوة تركي سنجل",
+                "en": "Turkish Coffe ( S )"
+              },
+              "image_url": "assets/WhatsApp Image 2026-01-22 at 5.39.301 PM.jpeg",
+              "price": 30
+            },
+            {
+              "name": {
+                "ar": "قهوة تركي دابل",
+                "en": "Turkish Coffe ( D )"
+              },
+              "image_url": "assets/WhatsApp Image 2026-01-22 at 5.39.301 PM.jpeg",
+              "price": 35
+            },
+            {
+              "name": {
+                "ar": "قهوة  فرنساوي",
+                "en": "French Coffe"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "قهوة  بندق",
+                "en": "Hazelnut Coffe"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "نسكافيه",
+                "en": "Nescafe"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            }
+          ]
+        },
+        {
+          "id": "espersso",
+          "label": "Espersso",
+          "items": [
+            {
+              "name": {
+                "ar": "{ سنجل } اسبرسو",
+                "en": "{ Single } Espresso"
+              },
+              "image_url": "assets/WhatsApp Image 2026-02-07 at 7.40.03 PM.jpeg",
+              "price": 45
+            },
+            {
+              "name": {
+                "ar": "{ دابل }اسبرسو",
+                "en": "{ Double } Espresso"
+              },
+              "image_url": "assets/WhatsApp Image 2026-02-07 at 7.40.03 PM.jpeg",
+              "price": 50
+            },
+            {
+              "name": {
+                "ar": "اسبرسو ميكاتو { سنجل }",
+                "en": "{ S } Espresso Macchiato"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 50
+            },
+            {
+              "name": {
+                "ar": "اسبرسو ميكاتو { دابل }",
+                "en": "{ D } Espresso Macchiato"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 55
+            },
+            {
+              "name": {
+                "ar": "اميركان كوفي",
+                "en": "America Coffe"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 50
+            },
+            {
+              "name": {
+                "ar": "كابتشينو",
+                "en": "Cappuccino"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "فلات وايت",
+                "en": "Flat White"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "لاتيه",
+                "en": "Latte"
+              },
+              "image_url": "assets/WhatsApp Image 2026-01-22 at 6.11.52 PM.jpeg",
+              "price": 65
+            },
+            {
+              "name": {
+                "ar": "كورتادو",
+                "en": "Cortado"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "موكا",
+                "en": "Mocha"
+              },
+              "image_url": "assets/WhatsApp Image 2026-01-22 at 5.40.09 PM.jpeg",
+              "price": 75
+            },
+            {
+              "name": {
+                "ar": "وايت موكا",
+                "en": "White Mocha"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 75
+            },
+            {
+              "name": {
+                "ar": "كون بانا",
+                "en": "Be Bana"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 50
+            },
+            {
+              "name": {
+                "ar": "تريستينو ميكاتو",
+                "en": "Tristino Macchiato"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 65
+            }
+          ]
+        },
+        {
+          "id": "hotdrinks",
+          "label": "Hot Drinks",
+          "items": [
+            {
+              "name": {
+                "ar": "شاي",
+                "en": "Tea"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 25
+            },
+            {
+              "name": {
+                "ar": "شای اخضر",
+                "en": "Green Tea"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 30
+            },
+            {
+              "name": {
+                "ar": "اعشاب",
+                "en": "Herbal Tea"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 30
+            },
+            {
+              "name": {
+                "ar": "شاي لاتيه",
+                "en": "Latte Tea"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 45
+            },
+            {
+              "name": {
+                "ar": "شاي كرك",
+                "en": "Karak Tea"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 65
+            },
+            {
+              "name": {
+                "ar": "هوت شوكليت",
+                "en": "Hot Chocolate"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "مارشيميلو هوت شوكليت",
+                "en": "Marshmallow Hot Chocolate"
+              },
+              "image_url": "assets/WhatsApp Image 2026-02-05 at 8.20.10 PM.jpeg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "هوت وايت شوكليت",
+                "en": "White Hot Chocolate"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "هوت سيدر",
+                "en": "Hot Cider"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 55
+            },
+            {
+              "name": {
+                "ar": "هوت لوتس",
+                "en": "Hot Lotus"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "سحلب ساده",
+                "en": "Simple Suhlab"
+              },
+              "image_url": "assets/WhatsApp Image 2026-02-05 at 6.11.15 PM.jpeg",
+              "price": 45
+            },
+            {
+              "name": {
+                "ar": "سحلب فواكه",
+                "en": "Fruit Suhlab"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 55
+            },
+            {
+              "name": {
+                "ar": "سحلب مكسرات",
+                "en": "Nutty Suhlab"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 65
+            }
+          ]
+        },
+        {
+          "id": "soda",
+          "label": "Mojito",
+          "items": [
+            {
+              "name": {
+                "ar": "موهيتو لمون نعناع",
+                "en": "Mojito Lemon Mint"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 55
+            },
+            {
+              "name": {
+                "ar": "موهيتو فروله",
+                "en": "Mojito Strawberry"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "موهيتو توت ازرق",
+                "en": "Mojito Blueberry"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "موهيتو ميكس بيري",
+                "en": "Mojito Mixed Berry"
+              },
+              "image_url": "assets/WhatsApp Image 2026-01-22 at 5.40.01 PM.jpeg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "موهيتو خوخ",
+                "en": "Mojito Peach"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "موهيتو مانجا",
+                "en": "Mojito Mango"
+              },
+              "image_url": "assets/WhatsApp Image 2026-01-22 at 5.39.30 PM.jpeg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "موهيتو راس بيري",
+                "en": "Mojito Raspberry"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "موهيتو باشون فروت",
+                "en": "Mojito Passion Fruit"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "موهيتو كيوي",
+                "en": "Mojito Kiwi"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "بيناكولادا لمون نعناع",
+                "en": "Pinacolada Lemon Mint"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 55
+            },
+            {
+              "name": {
+                "ar": "بيناكولادا فروله",
+                "en": "Pinacolada Strawberry"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "بيناكولادا توت ازرق",
+                "en": "Pinacolada Blueberry"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "بيناكولادا ميكس بيري",
+                "en": "Pinacolada Mixed Berry"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "بيناكولادا خوخ",
+                "en": "Pinacolada Peach"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "بيناكولادا مانجا",
+                "en": "Pinacolada Mango"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "بينا كولادا راس بيري",
+                "en": "Pinacolada Raspberries"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "بيناكولادا باشون فروت",
+                "en": "Pinacolada Passion Fruit"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "بيناكولادا كيوي",
+                "en": "Pinacolada Kiwi"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "بيناكولادا بلو",
+                "en": "Pinacolada Blue"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            }
+          ]
+        },
+        {
+          "id": "icedcoffee",
+          "label": "Iced Coffee",
+          "items": [
+            {
+              "name": {
+                "ar": "ايس لاتيه",
+                "en": "Iced Latte"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "ايس موكا",
+                "en": "Iced Mocha"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "ايس وايت موكا",
+                "en": "Iced White Mocha"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "ايس اسبانيش لاتيه",
+                "en": "Iced Spanish Latte"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "ايس لاتيه بطيخ",
+                "en": "Iced Watermelon Latte"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "ايس لاتيه تراميسيو",
+                "en": "Iced Tramisu Latte"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "ايس لاتيه  دولسي موز",
+                "en": "Iced Dulce de Leche Latte"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 75
+            },
+            {
+              "name": {
+                "ar": "ايس لاتيه توفی کرانش",
+                "en": "Iced Toffee Crunch Latte"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "ايس لاتيه أيريش كريم",
+                "en": "Iced Irish Cream Latte"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "ايس لاتيه بوب كورن",
+                "en": "Iced Popcorn Latte"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            }
+          ]
+        },
+        {
+          "id": "milkshake",
+          "label": "Milk Shake",
+          "items": [
+            {
+              "name": {
+                "ar": "ميلك تشك شوكليت",
+                "en": "Milkshake Chocolate"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "ميلك تشك كراميل",
+                "en": "Milkshake Caramel"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 65
+            },
+            {
+              "name": {
+                "ar": "ميلك تشك فروله",
+                "en": "Milkshake Strawberry"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "ميلك تشك توت ازرق",
+                "en": "Milkshake Blueberry"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 65
+            },
+            {
+              "name": {
+                "ar": "ميلك تشك فانيليا",
+                "en": "Milkshake Vanilla"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "ميلك تشك مانجو",
+                "en": "Milkshake Mango"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            },
+            {
+              "name": {
+                "ar": "ميلك تشك اوريو",
+                "en": "Milkshake Oreo"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "ميلك تشك نوتيلا",
+                "en": "Milkshake Nutella"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "ميلك تشك فسدق",
+                "en": "Milkshake Pistachio"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 75
+            },
+            {
+              "name": {
+                "ar": "ميلك تشك لوتس",
+                "en": "Milkshake Lotta"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "ميلك تشك لارا",
+                "en": "Milkshake LARA"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 95
+            }
+          ]
+        },
+        {
+          "id": "icedtea",
+          "label": "Iced Tea",
+          "items": [
+            {
+              "name": {
+                "ar": "أيس تي خوخ",
+                "en": "Iced Peach Tea"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 65
+            },
+            {
+              "name": {
+                "ar": "أيس ماتشا لاتيه",
+                "en": "Iced Matcha Latte"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "أيس ماتشا كوفي",
+                "en": "Iced Matcha Coffee"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 75
+            },
+            {
+              "name": {
+                "ar": "أيس ماتشا عسل",
+                "en": "Iced Matcha Honey"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            }
+          ]
+        },
+        {
+          "id": "juices",
+          "label": "Juices",
+          "items": [
+            {
+              "name": {
+                "ar": "موز",
+                "en": "Banana"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 55
+            },
+            {
+              "name": {
+                "ar": "مانجو",
+                "en": "Mango"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 55
+            },
+            {
+              "name": {
+                "ar": "فروله",
+                "en": "Pear"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 55
+            },
+            {
+              "name": {
+                "ar": "جوافه",
+                "en": "Pomegranate"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 55
+            },
+            {
+              "name": {
+                "ar": "ليمون",
+                "en": "Lemon"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 45
+            },
+            {
+              "name": {
+                "ar": "ليمون نعناع",
+                "en": "Lemon Mint"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 50
+            }
+          ]
+        },
+        {
+          "id": "smoothie",
+          "label": "Smoothie",
+          "items": [
+            {
+              "name": {
+                "ar": "سموزي توت ازرق",
+                "en": "Blueberry Smoothie"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 55
+            },
+            {
+              "name": {
+                "ar": "سموزي توت أحمر",
+                "en": "Strawberry Smoothie"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 55
+            },
+            {
+              "name": {
+                "ar": "سموزي باشون",
+                "en": "Passion Fruit Smoothie"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 55
+            },
+            {
+              "name": {
+                "ar": "سموزي  ميكس بيري",
+                "en": "Mixed Berry Smoothie"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 55
+            },
+            {
+              "name": {
+                "ar": "سموزي مانجو",
+                "en": "Mango Smoothie"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 55
+            },
+            {
+              "name": {
+                "ar": "سموزي فروله",
+                "en": "Pineapple Smoothie"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 55
+            },
+            {
+              "name": {
+                "ar": "سموزي ليمون نعناع",
+                "en": "Lemon Mint Smoothie"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 65
+            },
+            {
+              "name": {
+                "ar": "سموزي خوخ",
+                "en": "Peach Smoothie"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 55
+            },
+            {
+              "name": {
+                "ar": "سموزي كيوي مانجا",
+                "en": "Kiwi Mango Smoothie"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            }
+          ]
+        },
+        {
+          "id": "frappe",
+          "label": "Frappe",
+          "items": [
+            {
+              "name": {
+                "ar": "فرابيه كلاسيك",
+                "en": "Classic Frappe"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 65
+            },
+            {
+              "name": {
+                "ar": "فرابيه كراميل",
+                "en": "Caramel Frappe"
+              },
+              "image_url": "assets/WhatsApp Image 2026-01-22 at 6.13.03 PM.jpeg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "فرابيه كوفي",
+                "en": "Coffee Frappe"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "فرابيه شوكليت",
+                "en": "Chocolate Frappe"
+              },
+              "image_url": "assets/WhatsApp Image 2026-01-22 at 5.41.26 PM.jpeg",
+              "price": 65
+            },
+            {
+              "name": {
+                "ar": "فرابيه  بوب كورن",
+                "en": "Popcorn Frappe"
+              },
+              "image_url": "assets/WhatsApp Image 2026-01-22 at 6.34.31 PM.jpeg",
+              "price": 65
+            },
+            {
+              "name": {
+                "ar": "فرابيه ايريش كريم",
+                "en": "Irish Cream Frappe"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 65
+            },
+            {
+              "name": {
+                "ar": "فرابيه كراميل مملح",
+                "en": "Salted Caramel Frappe"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 65
+            },
+            {
+              "name": {
+                "ar": "فرابيه فسدق",
+                "en": "Frappe with Fudge"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 75
+            },
+            {
+              "name": {
+                "ar": "فرابيه لوتس",
+                "en": "Lots of Fudge Frappe"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "فرابيه موكا",
+                "en": "Mocha Frappe"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "فرابيه وايت موكا",
+                "en": "White Mocha Frappe"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "فرابيه تراميسو",
+                "en": "Tramisu Frappe"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "فرابيه دولسي موز",
+                "en": "Dulce de Leche Mango Frappe"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "فرابتشينو كلاسيك",
+                "en": "Classic Frappuccino"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 75
+            },
+            {
+              "name": {
+                "ar": "فرابتشينو كراميل",
+                "en": "Caramel Frappuccino"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 80
+            },
+            {
+              "name": {
+                "ar": "فرابتشينو شوكليت",
+                "en": "Chocolate Frappuccino"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 80
+            },
+            {
+              "name": {
+                "ar": "فرابتشينو موكا",
+                "en": "Mocha Frappuccino"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 80
+            }
+          ]
+        },
+        {
+          "id": "sparklingwater",
+          "label": "Soft Drink",
+          "items": [
+            {
+              "name": {
+                "ar": "مياه صغيره",
+                "en": "Small Water"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 20
+            },
+            {
+              "name": {
+                "ar": "بيبسي",
+                "en": "Pepsi"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 35
+            },
+            {
+              "name": {
+                "ar": "بريل",
+                "en": "Brill"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 35
+            },
+            {
+              "name": {
+                "ar": "فيروز",
+                "en": "Firoz"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 35
+            },
+            {
+              "name": {
+                "ar": "ريد بول",
+                "en": "Red Bull"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 80
+            },
+            {
+              "name": {
+                "ar": "V7",
+                "en": "{ كل الاطعمة }"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 35
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "appetizers",
+      "label": "Appetizers",
+      "subcategories": [
+        {
+          "id": "sunday",
+          "label": "Sunday",
+          "items": [
+            {
+              "name": {
+                "ar": "صن داي كلاسيك",
+                "en": "Classic Sunday"
+              },
+              "image_url": "assets/WhatsApp Image 2026-01-22 at 5.40.41 PM.jpeg",
+              "price": 40
+            },
+            {
+              "name": {
+                "ar": "صن داي كراميل",
+                "en": "Caramel Sunday"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 50
+            },
+            {
+              "name": {
+                "ar": "صن داي شوكليت",
+                "en": "Chocolate Sunday"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 50
+            },
+            {
+              "name": {
+                "ar": "صن داي فروله",
+                "en": "Flour Sunday"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 50
+            },
+            {
+              "name": {
+                "ar": "صن داي لوتس",
+                "en": "Lotus Sunday"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 50
+            },
+            {
+              "name": {
+                "ar": "صن داي بيستاشيو",
+                "en": "Pistachio Sunday"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 60
+            }
+          ]
+        },
+        {
+          "id": "dessert",
+          "label": "Dessert",
+          "items": [
+            {
+              "name": {
+                "ar": "فرينش توست",
+                "en": "French Toast"
+              },
+              "image_url": "assets/WhatsApp Image 2026-02-06 at 6.43.29 PM.jpeg",
+              "price": 100
+            },
+            {
+              "name": {
+                "ar": "تشيز كيك",
+                "en": "Cheese Cake"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 65
+            },
+            {
+              "name": {
+                "ar": "تشيز كيك نوتيلا",
+                "en": "Nutella Cheese Cake"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "تشيز كيك لوتس",
+                "en": "Lotus Cheese Cake"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "تشيز كيك فسدق",
+                "en": "Flour Cheese Cake"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 80
+            },
+            {
+              "name": {
+                "ar": "شوكليت فادج",
+                "en": "Chocolate Fudge"
+              },
+              "image_url": "assets/WhatsApp Image 2026-02-06 at 7.03.39 PM.jpeg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "مولتين كيك",
+                "en": "Molten Cake"
+              },
+              "image_url": "assets/WhatsApp Image 2026-02-05 at 6.12.17 PM.jpeg",
+              "price": 75
+            },
+            {
+              "name": {
+                "ar": "ريد فيلفت",
+                "en": "Red Velvet"
+              },
+              "image_url": "assets/WhatsApp Image 2026-01-22 at 6.11.51 PM.jpeg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "ترامسيو",
+                "en": "Tiramisu"
+              },
+              "image_url": "assets/WhatsApp Image 2026-02-06 at 7.06.20 PM.jpeg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "سينابون",
+                "en": "Cinnamon Bun"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 70
+            },
+            {
+              "name": {
+                "ar": "سان سبيستان",
+                "en": "San Sebastian"
+              },
+              "image_url": "assets/WhatsApp Image 2026-02-06 at 7.10.46 PM.jpeg",
+              "price": 80
+            }
+          ]
+        },
+        {
+          "id": "additions",
+          "label": "Additions",
+          "items": [
+            {
+              "name": {
+                "ar": "صوص",
+                "en": "Sauce"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 20
+            },
+            {
+              "name": {
+                "ar": "فليفر",
+                "en": "Flavor"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 20
+            },
+            {
+              "name": {
+                "ar": "حليب",
+                "en": "Milk"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 20
+            },
+            {
+              "name": {
+                "ar": "فواكه",
+                "en": "Fruits"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 25
+            },
+            {
+              "name": {
+                "ar": "كيندر",
+                "en": "Kinder"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 30
+            },
+            {
+              "name": {
+                "ar": "جلاكسي",
+                "en": "Galaxy"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 40
+            },
+            {
+              "name": {
+                "ar": "اوريو",
+                "en": "Oreo"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 15
+            },
+            {
+              "name": {
+                "ar": "كيت كات",
+                "en": "Kit Kat"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 30
+            },
+            {
+              "name": {
+                "ar": "بيستاشيو",
+                "en": "Pistachio"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 30
+            },
+            {
+              "name": {
+                "ar": "بولة آيس كريم",
+                "en": "Ice Cream Ball"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 20
+            },
+            {
+              "name": {
+                "ar": "ويبد كريم",
+                "en": "Whipped Cream"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 30
+            },
+            {
+              "name": {
+                "ar": "مارشيميلو",
+                "en": "Marshmallow"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 15
+            },
+            {
+              "name": {
+                "ar": "بوبا",
+                "en": "Boba"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 30
+            },
+            {
+              "name": {
+                "ar": "تبيوكا",
+                "en": "Tapioca"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 30
+            },
+            {
+              "name": {
+                "ar": "نوتيلا",
+                "en": "Nutella"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 30
+            },
+            {
+              "name": {
+                "ar": "وايت شوكليت",
+                "en": "White Chocolate"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 25
+            },
+            {
+              "name": {
+                "ar": "لوتس",
+                "en": "Lotus"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 25
+            },
+            {
+              "name": {
+                "ar": "مكسرات",
+                "en": "Nuts"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 25
+            },
+            {
+              "name": {
+                "ar": "عسل",
+                "en": "Honey"
+              },
+              "image_url": "assets/images/menu-placeholder.svg",
+              "price": 20
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
