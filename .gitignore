@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+
+# Uploads (runtime)
+uploads/
+
+# Lock files
+*.lock
+
+# OS junk
+.DS_Store
+Thumbs.db
+
