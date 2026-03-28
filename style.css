@@ -5,8 +5,8 @@
   --accent-color: #3a2801;
   --text-color: #333;
   --bg-color: #fff;
-  --header-font: 'Playfair Display', serif;
-  --body-font: 'Lora', serif;
+  --header-font: 'Forum', serif;
+  --body-font: 'DM Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 
 * { 
@@ -28,11 +28,32 @@ body {
 
 /* Hero Section */
 .hero-section {
-  background: linear-gradient(rgba(0, 0, 0, 1.5), rgba(0, 0, 0, .5)), url('img/WhatsApp\ Image\ 2026-01-09\ at\ 1.27.02\ PM.jpeg') center/cover fixed no-repeat;
+  background: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, .5)), url('img/WhatsApp\ Image\ 2026-01-09\ at\ 1.27.02\ PM.jpeg') center/cover fixed no-repeat;
   color: var(--primary-color);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* تنسيقات ال place holder ) */
+.section-subtitle::after {
+  content: "";
+  display: block;
+  width: 100px;
+  height: 2px;
+  margin-inline: auto;
+  margin-block-start: 10px;
+  background: linear-gradient(90deg, transparent, var(--gold-crayola), transparent);
+  opacity: 0.9;
+}
+
+.service-card .has-before::before {
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.16) 0 2px, transparent 3px),
+    radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.12) 0 2px, transparent 3px),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0));
+  background-size: 26px 26px, 30px 30px, cover;
+  background-repeat: repeat, repeat, no-repeat;
 }
 
 .hero-text {

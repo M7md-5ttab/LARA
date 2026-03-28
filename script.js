@@ -1,4 +1,20 @@
 document.addEventListener('DOMContentLoaded', () => {
+  /* لو مفيش صورة نستعمل ال place holder  */
+  const menuImageFallbackSrc = 'assets/images/menu-placeholder.svg';
+  document.querySelectorAll('.menu-item-img').forEach(img => {
+    img.setAttribute('loading', img.getAttribute('loading') || 'lazy');
+    img.setAttribute('decoding', img.getAttribute('decoding') || 'async');
+
+    const src = (img.getAttribute('src') || '').trim();
+    if (!src || src === 'assets/' || src === 'assets/.WebP') img.src = menuImageFallbackSrc;
+
+    img.addEventListener('error', () => {
+      if (img.dataset.fallbackApplied === 'true') return;
+      img.dataset.fallbackApplied = 'true';
+      img.src = menuImageFallbackSrc;
+    });
+  });
+
   /* Animations on scroll */
   const animatedElements = document.querySelectorAll('.animate-on-scroll');
   const observer = new IntersectionObserver((entries) => {
@@ -178,16 +194,14 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   recalcBadge();
-});
 
-document.addEventListener("DOMContentLoaded", ()=> {
-  const lenis = new Lenis({
-    lerp: 0.070,
-    smoothWheel: true,
-  });
-	function raf(time) {
-		lenis.raf(time);
-		requestAnimationFrame(raf);
-	}
-	requestAnimationFrame(raf);
+  /* عاملها DOMContentLoaded لوحدها ليه يعم انت مخاصمها , خليها مع اخواتها   */
+  if (typeof Lenis === 'function') {
+    const lenis = new Lenis({ lerp: 0.070, smoothWheel: true });
+    const raf = (time) => {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    };
+    requestAnimationFrame(raf);
+  }
 });
