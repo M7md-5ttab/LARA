@@ -300,6 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const cartTotal = cartDropdown.querySelector('.cart-total');
   const cartEmpty = cartDropdown.querySelector('.cart-empty');
   const cartCount = document.querySelector('.cart-count');
+  const orderCsrfToken = document.querySelector('meta[name="order-csrf-token"]')?.getAttribute('content') || '';
 
   const formatMoney = num => 'LE ' + (Number(num) || 0).toFixed(2);
   const recalcBadge = () => cartCount.textContent = cart.reduce((s, i) => s + i.qty, 0);
@@ -382,10 +383,43 @@ document.addEventListener('DOMContentLoaded', () => {
     cart.length = 0;
     updateCart();
   });
-  cartDropdown.querySelector('.cart-checkout').addEventListener('click', e => {
+  const cartCheckoutBtn = cartDropdown.querySelector('.cart-checkout');
+  cartCheckoutBtn.addEventListener('click', async e => {
     e.stopPropagation();
     if (!cart.length) return alert('Your cart is empty.');
-    alert('Proceeding to checkout... (demo)');
+
+    const previousLabel = cartCheckoutBtn.textContent;
+    cartCheckoutBtn.disabled = true;
+    cartCheckoutBtn.textContent = 'Loading...';
+
+    try {
+      const response = await fetch('/order/start.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': orderCsrfToken,
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          items: cart.map(item => ({
+            itemId: item.itemId,
+            sizeId: item.sizeId,
+            qty: item.qty,
+          })),
+        }),
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result?.ok) {
+        throw new Error(result?.error || 'Failed to start checkout.');
+      }
+
+      window.location.href = result.redirect_url || '/order/review/';
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Failed to start checkout.');
+      cartCheckoutBtn.disabled = false;
+      cartCheckoutBtn.textContent = previousLabel;
+    }
   });
 
   /* Toast Notifications */
@@ -405,19 +439,35 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
     btn.addEventListener('click', e => {
       const itemEl = e.target.closest('.menu-item');
-      const baseName = itemEl.querySelector('h3')?.textContent?.trim() || '';
+      const nameParts = Array
+        .from(itemEl.querySelectorAll('h3'))
+        .map(el => el.textContent?.trim() || '')
+        .filter(Boolean);
+      const distinctNames = [...new Set(nameParts)];
+      const baseName = distinctNames.join(' / ') || '';
       let name = baseName;
+      const itemId = Number.parseInt(itemEl?.dataset?.itemId || '', 10);
+      if (!Number.isInteger(itemId) || itemId <= 0) {
+        alert('This item cannot be ordered right now.');
+        return;
+      }
+
+      let sizeId = null;
 
       const sizeOptions = itemEl.querySelector?.('.size-options') || null;
       if (sizeOptions) {
         const checked = sizeOptions.querySelector('input[type="radio"]:checked');
         const sizeLabel = (checked?.dataset?.sizeEn || checked?.dataset?.sizeAr || '').trim();
+        const parsedSizeId = Number.parseInt(checked?.dataset?.sizeId || '', 10);
+        sizeId = Number.isInteger(parsedSizeId) && parsedSizeId > 0 ? parsedSizeId : null;
         if (sizeLabel) name = `${baseName} (${sizeLabel})`;
       } else {
         const sizeSelect = itemEl.querySelector?.('.size-select') || null;
         if (sizeSelect) {
           const opt = sizeSelect.selectedOptions?.[0] || null;
           const sizeLabel = (opt?.dataset?.sizeEn || opt?.dataset?.sizeAr || '').trim();
+          const parsedSizeId = Number.parseInt(opt?.dataset?.sizeId || '', 10);
+          sizeId = Number.isInteger(parsedSizeId) && parsedSizeId > 0 ? parsedSizeId : null;
           if (sizeLabel) name = `${baseName} (${sizeLabel})`;
         }
       }
@@ -426,10 +476,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const price = priceEl?.dataset?.price ?
         parseFloat(priceEl.dataset.price) :
         parseFloat((priceEl.textContent || '').replace(/[^\d.]/g, '')) || 0;
-      const img = itemEl.querySelector('img')?.getAttribute('src');
+      const img = itemEl.querySelector('img')?.getAttribute('src') || menuImageFallbackSrc;
+      const key = `${itemId}:${sizeId || 0}`;
 
-      const existing = cart.find(i => i.name === name);
-      existing ? existing.qty++ : cart.push({ name, price, img, qty: 1 });
+      const existing = cart.find(i => i.key === key);
+      existing ? existing.qty++ : cart.push({ key, itemId, sizeId, name, price, img, qty: 1 });
 
       updateCart();
       showToast(`${name} added to cart ✔`);

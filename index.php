@@ -2,15 +2,10 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/functions/ConvertJsonToObject.php';
+require_once __DIR__ . '/order/_bootstrap.php';
 
-$menu = ConvertJsonToObject::fromFile(__DIR__ . '/data/menu.json');
-$subcategoriesById = ConvertJsonToObject::subcategoriesById($menu);
-
-function e(string $value): string
-{
-  return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-}
+$menu = (new MenuRepository())->load();
+$subcategoriesById = $menu->subcategoriesById();
 
 ?>
 <!DOCTYPE html>
@@ -20,6 +15,7 @@ function e(string $value): string
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="order-csrf-token" content="<?= e(order_csrf_token()) ?>">
   <meta name="keywords" content="Coffee Shop">
   <meta name="description" content="Discover our cafe & restaurant menu with fresh coffee, delicious meals, online ordering, and table reservations in a cozy atmosphere.">
 
@@ -66,7 +62,7 @@ function e(string $value): string
             <div class="cart-total">Total:  LE  0.00</div>
             <div class="cart-actions">
               <button class="cart-clear" aria-label="Clear cart">Clear</button>
-              <button class="cart-checkout" aria-label="Checkout">Support</button>
+              <button class="cart-checkout" aria-label="Continue to order">Continue to order</button>
             </div>
           </div>
         </li>
@@ -215,7 +211,7 @@ function e(string $value): string
                       $basePrice = (string) ($item->price ?? 0);
                       $defaultSizePrice = $hasSizes ? (string) (($sizes[0]->price ?? null) ?? 0) : $basePrice;
                     ?>
-                    <div class="menu-item animate-on-scroll" data-category="<?= e($subcategoryId) ?>">
+                    <div class="menu-item animate-on-scroll" data-category="<?= e($subcategoryId) ?>" data-item-id="<?= e((string) $item->id) ?>">
                       <img src="<?= e($imageUrl) ?>" alt="" class="menu-item-img">
                       <div class="menu-item-content">
                         <h3><?= e($nameAr) ?></h3>
@@ -235,7 +231,7 @@ function e(string $value): string
                                     $sizeLabel = $sizeNameEn !== '' ? $sizeNameEn : $sizeNameAr;
                                   }
                                 ?>
-                                <option value="<?= e($sizePriceText) ?>" data-size-ar="<?= e($sizeNameAr) ?>" data-size-en="<?= e($sizeNameEn) ?>">
+                                <option value="<?= e($sizePriceText) ?>" data-size-id="<?= e((string) $size->id) ?>" data-size-ar="<?= e($sizeNameAr) ?>" data-size-en="<?= e($sizeNameEn) ?>">
                                   <?= e($sizeLabel) ?> (LE <?= e($sizePriceText) ?>)
                                 </option>
                               <?php endforeach; ?>

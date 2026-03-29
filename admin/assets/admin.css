@@ -443,3 +443,386 @@ body.modal-open {
 }
 
 .auth-footer { margin-top: 14px; color: var(--muted); text-align: center; }
+
+.orders-shell {
+  width: min(1200px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 20px 0 42px;
+}
+
+.orders-topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.orders-topbar h1 {
+  margin: 10px 0 8px;
+  font-size: clamp(28px, 4vw, 40px);
+}
+
+.orders-topbar p {
+  margin: 0;
+  color: var(--muted);
+  max-width: 720px;
+}
+
+.filters-card,
+.summary-card,
+.order-card-admin,
+.receipt-card,
+.cancel-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.filters-card {
+  padding: 16px;
+  margin-bottom: 18px;
+}
+
+.filters-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 220px)) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.telegram-add-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 320px) auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.filters-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.telegram-help-note {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.telegram-help-note strong {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.telegram-help-note p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.summary-card {
+  padding: 16px;
+}
+
+.summary-card span {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.summary-card strong {
+  font-size: 26px;
+}
+
+.orders-list {
+  display: grid;
+  gap: 16px;
+}
+
+.telegram-recipient-list {
+  display: grid;
+  gap: 16px;
+}
+
+.order-card-admin {
+  padding: 18px;
+}
+
+.telegram-recipient-card {
+  display: grid;
+  gap: 16px;
+}
+
+.telegram-recipient-form {
+  display: grid;
+  gap: 14px;
+}
+
+.telegram-recipient-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 320px);
+  gap: 12px;
+}
+
+.telegram-recipient-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.telegram-recipient-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.telegram-recipient-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.order-card-single {
+  display: grid;
+  gap: 18px;
+}
+
+.order-card-head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.order-serial {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.order-meta-line {
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.status-badge-pending {
+  background: rgba(215, 179, 106, 0.16);
+  color: rgba(255, 239, 208, 0.95);
+}
+
+.status-badge-preparing {
+  background: rgba(98, 179, 255, 0.14);
+  color: rgba(220, 240, 255, 0.95);
+}
+
+.status-badge-received {
+  background: rgba(33, 197, 93, 0.14);
+  color: rgba(225, 255, 234, 0.95);
+}
+
+.status-badge-cancelled {
+  background: rgba(255, 77, 79, 0.14);
+  color: rgba(255, 220, 220, 0.95);
+}
+
+.order-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.order-info-grid-dense {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.order-info-box {
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.order-info-box strong {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.order-info-box p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.order-info-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.order-items-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.order-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.order-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.order-card-actions form {
+  margin: 0;
+}
+
+.admin-receipt-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-receipt-table th,
+.admin-receipt-table td {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.admin-receipt-table th {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-receipt-table td:last-child,
+.admin-receipt-table th:last-child {
+  text-align: right;
+}
+
+.admin-receipt-table tfoot td {
+  border-bottom: 0;
+  font-weight: 800;
+}
+
+.cancel-card {
+  padding: 18px;
+}
+
+.cancel-card h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.cancel-card p {
+  margin: 0 0 14px;
+  color: var(--muted);
+}
+
+.cancel-form {
+  display: grid;
+  gap: 12px;
+}
+
+.field-textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.order-note {
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+}
+
+.danger-note {
+  background: rgba(255, 77, 79, 0.1);
+  border-color: rgba(255, 77, 79, 0.24);
+  color: rgba(255, 220, 220, 0.95);
+}
+
+.panel-empty {
+  overflow: hidden;
+}
+
+@media (max-width: 920px) {
+  .summary-grid,
+  .order-info-grid,
+  .order-info-grid-dense {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .filters-form,
+  .telegram-add-form,
+  .telegram-recipient-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .filters-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .orders-shell {
+    width: min(100% - 16px, 1200px);
+    padding-top: 14px;
+  }
+
+  .orders-topbar,
+  .order-card-head-row {
+    flex-direction: column;
+  }
+
+  .summary-grid,
+  .order-info-grid,
+  .order-info-grid-dense,
+  .filters-form,
+  .telegram-add-form,
+  .telegram-recipient-grid {
+    grid-template-columns: 1fr;
+  }
+}

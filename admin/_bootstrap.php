@@ -2,11 +2,7 @@
 
 declare(strict_types=1);
 
-define('PROJECT_ROOT', dirname(__DIR__));
-
-require_once PROJECT_ROOT . '/functions/Env.php';
-
-Env::load(PROJECT_ROOT . '/.env');
+require_once dirname(__DIR__) . '/bootstrap.php';
 
 ini_set('session.use_strict_mode', '1');
 ini_set('session.use_only_cookies', '1');
@@ -49,7 +45,7 @@ function admin_csrf_token(): string
 
 function admin_require_csrf(): void
 {
-    $provided = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    $provided = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? ($_POST['csrf_token'] ?? '');
     if (!is_string($provided) || $provided === '') {
         http_response_code(403);
         header('Content-Type: application/json; charset=UTF-8');

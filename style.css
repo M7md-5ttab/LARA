@@ -689,8 +689,15 @@ footer {
   background-color: #3a2801;
 }
 
+.cart-actions button:disabled {
+  opacity: .7;
+  cursor: wait;
+}
+
 .cart-actions .cart-checkout { 
-  display: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: var(--secondary-color); 
   color: var(--primary-color); 
 }

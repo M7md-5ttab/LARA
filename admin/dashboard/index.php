@@ -26,11 +26,13 @@ $username = (string) ($_SESSION['admin_username'] ?? 'admin');
         <div class="auth-badge">LARA</div>
         <div class="dash-title">
           <strong>Admin Dashboard</strong>
-          <span class="dash-sub">Manage menu, categories, items</span>
+          <span class="dash-sub">Manage menu, categories, items, and orders</span>
         </div>
       </div>
 
       <div class="dash-actions">
+        <a class="btn btn-ghost" href="/admin/statistics/orders/">Orders</a>
+        <a class="btn btn-ghost" href="/admin/settings/telegram/">Telegram</a>
         <span class="dash-user" title="Logged in user"><?= e($username) ?></span>
         <a class="btn btn-ghost" href="/admin/logout/">Logout</a>
       </div>
