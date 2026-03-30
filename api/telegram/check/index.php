@@ -12,6 +12,25 @@ function telegram_check_json(array $payload, int $status = 200): void
     exit;
 }
 
+function telegram_check_datetime_ar(?string $value): string
+{
+    if ($value === null || trim($value) === '') {
+        return 'غير متوفر';
+    }
+
+    $timestamp = strtotime($value);
+    if ($timestamp === false) {
+        return $value;
+    }
+
+    return str_replace(['AM', 'PM'], ['ص', 'م'], date('Y-m-d h:i A', $timestamp));
+}
+
+function telegram_check_money_ar(int|float $amount): string
+{
+    return number_format((float) $amount, 2, '.', '') . ' ج.م';
+}
+
 if (!in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['GET', 'POST'], true)) {
     telegram_check_json([
         'ok' => false,
@@ -25,11 +44,12 @@ try {
     $counts = [
         OrderService::STATUS_PENDING => 0,
         OrderService::STATUS_PREPARING => 0,
-        OrderService::STATUS_RECEIVED => 0,
+        OrderService::STATUS_DELIVERED => 0,
         OrderService::STATUS_CANCELLED => 0,
     ];
 
     foreach ($repository->countOrdersByStatus() as $status => $total) {
+        $status = OrderService::normalizeStatusFilter((string) $status) ?? (string) $status;
         if (!array_key_exists($status, $counts)) {
             continue;
         }
@@ -42,10 +62,11 @@ try {
         'total_orders' => array_sum($counts),
         'pending_orders' => $counts[OrderService::STATUS_PENDING],
         'preparing_orders' => $counts[OrderService::STATUS_PREPARING],
-        'received_orders' => $counts[OrderService::STATUS_RECEIVED],
+        'delivered_orders' => $counts[OrderService::STATUS_DELIVERED],
+        'received_orders' => $counts[OrderService::STATUS_DELIVERED],
         'cancelled_orders' => $counts[OrderService::STATUS_CANCELLED],
-        'closed_orders' => $counts[OrderService::STATUS_RECEIVED] + $counts[OrderService::STATUS_CANCELLED],
-        'admin_orders_url' => AppUrl::url('/admin/statistics/orders/'),
+        'closed_orders' => $counts[OrderService::STATUS_DELIVERED] + $counts[OrderService::STATUS_CANCELLED],
+        'admin_orders_url' => AppUrl::url('/admin/dashboard/?view=orders'),
     ];
 
     $pending = [];
@@ -58,11 +79,14 @@ try {
             'serial' => $order->serial,
             'customer_name' => $order->customer_name,
             'phone_primary' => $order->phone_primary,
+            'phone_secondary' => $order->phone_secondary,
             'total_amount' => (float) $order->total_amount,
             'total_amount_display' => OrderService::formatMoney($order->total_amount),
+            'total_amount_display_ar' => telegram_check_money_ar($order->total_amount),
             'ordered_at' => $order->ordered_at,
             'ordered_at_display' => OrderService::formatDateTime($order->ordered_at),
-            'manage_url' => AppUrl::url('/admin/statistics/orders/view/?serial=' . rawurlencode($order->serial)),
+            'ordered_at_display_ar' => telegram_check_datetime_ar($order->ordered_at),
+            'manage_url' => AppUrl::url('/admin/dashboard/?view=orders'),
         ];
     }
 

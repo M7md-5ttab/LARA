@@ -93,6 +93,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateTrigger = (select) => {
       const trigger = select?._sizeTrigger || null;
+      const wrap = select?.closest?.('.menu-item-sizes') || null;
+      if (trigger) {
+        trigger.disabled = !!select?.disabled;
+      }
+      if (wrap) {
+        if (select?.disabled) wrap.dataset.disabled = '1';
+        else delete wrap.dataset.disabled;
+      }
       if (!trigger) return;
       const opt = select.selectedOptions?.[0] || select.options?.[select.selectedIndex] || null;
       const nameEl = trigger.querySelector('.size-trigger-name');
@@ -118,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const openDropdown = (select, trigger) => {
-      if (!select || !trigger) return;
+      if (!select || !trigger || select.disabled || trigger.disabled) return;
       if (!listEl) return;
 
       if (activeSelect === select && !dropdown.hidden) {
@@ -241,11 +249,13 @@ document.addEventListener('DOMContentLoaded', () => {
       select.addEventListener('change', () => updateTrigger(select));
 
       trigger.addEventListener('click', (ev) => {
+        if (trigger.disabled) return;
         ev.preventDefault();
         ev.stopPropagation();
         openDropdown(select, trigger);
       });
       trigger.addEventListener('keydown', (ev) => {
+        if (trigger.disabled) return;
         if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowDown') {
           ev.preventDefault();
           openDropdown(select, trigger);
@@ -438,7 +448,12 @@ document.addEventListener('DOMContentLoaded', () => {
   /* Add To Cart Buttons */
   document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
     btn.addEventListener('click', e => {
-      const itemEl = e.target.closest('.menu-item');
+      const itemEl = e.currentTarget.closest('.menu-item');
+      if ((itemEl?.dataset?.outOfStock || '') === '1' || btn.disabled) {
+        alert('This item is currently out of stock.');
+        return;
+      }
+
       const nameParts = Array
         .from(itemEl.querySelectorAll('h3'))
         .map(el => el.textContent?.trim() || '')

@@ -8,6 +8,7 @@ final class MenuItem
     public LocalizedText $name;
     public string $image_url = '';
     public int|float $price = 0;
+    public bool $is_out_of_stock = false;
     public array $sizes = [];
 
     public function __construct()

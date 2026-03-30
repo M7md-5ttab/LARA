@@ -12,6 +12,7 @@ final class Order
     public string $address = '';
     public string $phone_primary = '';
     public ?string $phone_secondary = null;
+    public ?string $delivered_by = null;
     public ?string $cancel_reason = null;
     public int|float $total_amount = 0;
     public string $ordered_at = '';

@@ -66,6 +66,18 @@ final class MenuService
             ]);
         }
 
+        if ($action === 'create_category') {
+            $category = $payload['category'] ?? null;
+            if (!is_array($category)) {
+                throw new RuntimeException('Missing category data.');
+            }
+
+            return $this->repository->createCategory([
+                'id' => $this->sanitizeId((string) ($category['id'] ?? '')),
+                'label' => $this->sanitizeLabel((string) ($category['label'] ?? ''), 'Category label'),
+            ]);
+        }
+
         if ($action === 'update_subcategory') {
             $subcategoryId = $this->sanitizeId((string) ($payload['subcategory_id'] ?? ''));
             $patch = $payload['patch'] ?? null;
@@ -191,6 +203,7 @@ final class MenuService
             'name_en' => $nameEn,
             'image_url' => $imageUrl,
             'price' => $price,
+            'is_out_of_stock' => $this->sanitizeBool($data['is_out_of_stock'] ?? $data['isOutOfStock'] ?? false),
             'sizes' => $sizes,
         ];
     }
@@ -232,5 +245,33 @@ final class MenuService
         }
 
         return abs($number - (int) $number) < 1e-9 ? (int) $number : $number;
+    }
+
+    private function sanitizeBool(mixed $value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_int($value) || is_float($value)) {
+            return (bool) $value;
+        }
+
+        if (is_string($value)) {
+            $normalized = strtolower(trim($value));
+            if ($normalized === '') {
+                return false;
+            }
+
+            if (in_array($normalized, ['1', 'true', 'yes', 'on'], true)) {
+                return true;
+            }
+
+            if (in_array($normalized, ['0', 'false', 'no', 'off'], true)) {
+                return false;
+            }
+        }
+
+        return !empty($value);
     }
 }

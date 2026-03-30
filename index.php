@@ -206,19 +206,23 @@ $subcategoriesById = $menu->subcategoriesById();
                       $imageUrl = (string) ($item->image_url ?? '');
                       $nameAr = (string) (($item->name->ar ?? '') ?? '');
                       $nameEn = (string) (($item->name->en ?? '') ?? '');
+                      $isOutOfStock = (bool) ($item->is_out_of_stock ?? false);
                       $sizes = $item->sizes ?? null;
                       $hasSizes = is_array($sizes) && count($sizes) > 0;
                       $basePrice = (string) ($item->price ?? 0);
                       $defaultSizePrice = $hasSizes ? (string) (($sizes[0]->price ?? null) ?? 0) : $basePrice;
                     ?>
-                    <div class="menu-item animate-on-scroll" data-category="<?= e($subcategoryId) ?>" data-item-id="<?= e((string) $item->id) ?>">
+                    <div class="menu-item animate-on-scroll<?= $isOutOfStock ? ' menu-item-out-of-stock' : '' ?>" data-category="<?= e($subcategoryId) ?>" data-item-id="<?= e((string) $item->id) ?>" data-out-of-stock="<?= $isOutOfStock ? '1' : '0' ?>">
+                      <?php if ($isOutOfStock): ?>
+                        <span class="menu-item-badge">Out of stock</span>
+                      <?php endif; ?>
                       <img src="<?= e($imageUrl) ?>" alt="" class="menu-item-img">
                       <div class="menu-item-content">
                         <h3><?= e($nameAr) ?></h3>
                         <h3><?= e($nameEn) ?></h3>
                         <?php if ($hasSizes): ?>
                           <div class="menu-item-sizes">
-                            <select class="size-select" aria-label="Select size">
+                            <select class="size-select" aria-label="Select size"<?= $isOutOfStock ? ' disabled' : '' ?>>
                               <?php foreach ($sizes as $size): ?>
                                 <?php
                                   $sizeNameAr = (string) (($size->name->ar ?? '') ?? '');
@@ -240,7 +244,7 @@ $subcategoriesById = $menu->subcategoriesById();
                         <?php endif; ?>
                         <div class="menu-item-footer">
                           <span class="price" data-price="<?= e($defaultSizePrice) ?>"> LE  <?= e($defaultSizePrice) ?></span>
-                          <button class="add-to-cart-btn">+</button>
+                          <button class="add-to-cart-btn" type="button"<?= $isOutOfStock ? ' disabled aria-disabled="true"' : '' ?>><?= $isOutOfStock ? 'Out of stock' : '+' ?></button>
                         </div>
                       </div>
                     </div>

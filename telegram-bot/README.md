@@ -2,7 +2,7 @@
 
 This folder is a separate Vercel project.
 
-It is not connected to the PHP app. The current version only handles Telegram webhook updates and replies to `/chatid`.
+It connects to the PHP app through internal Telegram bridge endpoints for listing orders, updating statuses, and storing short-lived conversation state.
 
 The bot entrypoint is:
 
@@ -11,15 +11,32 @@ The bot entrypoint is:
 ## Commands
 
 - `/start`
-  - shows the available commands
+  - shows the available commands in Arabic
 - `/help`
-  - shows the available commands
+  - shows the available commands in Arabic
 - `/chatid`
-  - replies with the current Telegram chat id
+  - replies with the current Telegram chat id in English
+- `/pending`
+  - sends pending orders as separate messages with inline actions
+- `/prepared`
+  - sends preparing orders as separate messages with inline actions
 - `/check`
-  - shows the current pending order summary and latest pending orders
+  - shows the current order summary and latest pending orders in Arabic
 
-The bot also calls Telegram `setMyCommands` with the default scope, so these commands are public and visible to anyone using the bot.
+## Interactive Actions
+
+- Pending order card
+  - `🧑‍🍳 تجهيز الطلب`
+    - asks for confirmation, then moves the order to `preparing`
+  - `❌ إلغاء الطلب`
+    - asks for a cancellation reason and aborts if the reply is invalid
+- Preparing order card
+  - `✅ تم التسليم`
+    - asks for confirmation, then asks for the delivery person name with a 5-minute timeout
+  - `❌ إلغاء الطلب`
+    - same cancellation flow as pending orders
+
+The bot calls Telegram `setMyCommands` for the default scope and also syncs per-chat command lists based on each saved member's permissions.
 On `GET /api`, the bot also checks `getWebhookInfo` and auto-updates the webhook to the current deployed `/api` URL when needed.
 
 ## Environment Variables
@@ -29,7 +46,7 @@ Set these in the Vercel project:
 - `TELEGRAM_BOT_TOKEN`
   - your BotFather token
 - `LARA_APP_URL` or `APP_URL`
-  - the public URL of this PHP app so the bot can call `/api/telegram/check/`
+  - the public URL of this PHP app so the bot can call `/api/telegram/check/`, `/api/telegram/orders/`, `/api/telegram/state/`, and `/api/telegram/member/`
 
 ## Deploy
 
@@ -72,3 +89,5 @@ curl "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/getWebhookInfo"
 - `GET /` is rewritten to `/api` by Vercel.
 - `/chatid` works in private chats and groups.
 - The returned id is the Telegram chat id for that conversation.
+- Order-management commands are intended for chat IDs stored in the PHP admin Telegram settings.
+- Each saved chat can independently control notifications, `/pending`, `/prepared`, `/check`, and `/help`.

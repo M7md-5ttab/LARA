@@ -24,11 +24,20 @@ if (!isset($_SESSION['csrf_token']) || !is_string($_SESSION['csrf_token']) || $_
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-header('X-Frame-Options: DENY');
+$isEmbeddedAdminPage = (
+    (isset($_GET['embedded']) && (string) $_GET['embedded'] === '1')
+    || (isset($_POST['embedded']) && (string) $_POST['embedded'] === '1')
+);
+
+header('X-Frame-Options: ' . ($isEmbeddedAdminPage ? 'SAMEORIGIN' : 'DENY'));
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: no-referrer');
 header('Permissions-Policy: geolocation=(), camera=(), microphone=()');
-header("Content-Security-Policy: default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: blob: https:; style-src 'self'; script-src 'self'; connect-src 'self'; form-action 'self'");
+header(
+    "Content-Security-Policy: default-src 'self'; base-uri 'none'; object-src 'none'; "
+    . "frame-ancestors " . ($isEmbeddedAdminPage ? "'self'" : "'none'") . "; "
+    . "img-src 'self' data: blob: https:; style-src 'self'; script-src 'self'; connect-src 'self'; form-action 'self'"
+);
 header('X-Robots-Tag: noindex, nofollow');
 
 if (!function_exists('e')) {

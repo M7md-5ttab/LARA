@@ -66,7 +66,7 @@ final class OrderRepository
         $placeholders = implode(', ', array_fill(0, count($itemIds), '?'));
 
         $itemStatement = $this->pdo->prepare(
-            "SELECT id, name_ar, name_en, image_url, base_price
+            "SELECT id, name_ar, name_en, image_url, base_price, is_out_of_stock
              FROM items
              WHERE id IN ({$placeholders})"
         );
@@ -89,6 +89,7 @@ final class OrderRepository
                 'name_en' => (string) ($row['name_en'] ?? ''),
                 'image_url' => (string) ($row['image_url'] ?? ''),
                 'base_price' => $this->normalizePrice($row['base_price'] ?? 0),
+                'is_out_of_stock' => (bool) ($row['is_out_of_stock'] ?? false),
                 'sizes' => [],
             ];
         }
@@ -166,6 +167,7 @@ final class OrderRepository
                     address,
                     phone_primary,
                     phone_secondary,
+                    delivered_by,
                     cancel_reason,
                     total_amount,
                     ordered_at,
@@ -179,6 +181,7 @@ final class OrderRepository
                     :address,
                     :phone_primary,
                     :phone_secondary,
+                    NULL,
                     NULL,
                     :total_amount,
                     :ordered_at,
@@ -315,53 +318,75 @@ final class OrderRepository
         return $this->hydrateOrder($row, $this->loadOrderItemsMap([(int) $row['id']]));
     }
 
-    public function listOrders(?string $fromDate = null, ?string $toDate = null): array
+    public function listOrders(?string $fromDate = null, ?string $toDate = null, ?string $serialSearch = null, ?string $statusFilter = null): array
     {
-        $where = [];
-        $params = [];
+        [$whereSql, $params] = $this->buildOrdersRangeFilter($fromDate, $toDate);
 
-        if ($fromDate !== null && $fromDate !== '') {
-            $where[] = 'ordered_at >= :from_date';
-            $params['from_date'] = $fromDate . ' 00:00:00';
-        }
-
-        if ($toDate !== null && $toDate !== '') {
-            $endDate = new DateTimeImmutable($toDate . ' 00:00:00');
-            $where[] = 'ordered_at < :to_date';
-            $params['to_date'] = $endDate->modify('+1 day')->format('Y-m-d H:i:s');
-        }
-
-        $sql = 'SELECT * FROM orders';
-        if ($where !== []) {
-            $sql .= ' WHERE ' . implode(' AND ', $where);
-        }
-        $sql .= ' ORDER BY ordered_at DESC, id DESC';
-
-        $statement = $this->pdo->prepare($sql);
+        $statement = $this->pdo->prepare(
+            'SELECT * FROM orders'
+            . $whereSql
+            . ' ORDER BY ordered_at DESC, id DESC'
+        );
         $statement->execute($params);
-        $rows = $statement->fetchAll();
 
-        $orderIds = [];
+        $rows = $this->filterOrderRowsBySerialSearch($statement->fetchAll(), $serialSearch);
+        $rows = $this->filterOrderRowsByStatus($rows, $statusFilter);
+
+        return $this->hydrateOrdersFromRows($rows);
+    }
+
+    public function listOrdersPage(?string $fromDate = null, ?string $toDate = null, int $page = 1, int $perPage = 12, ?string $serialSearch = null, ?string $statusFilter = null): array
+    {
+        $normalizedPage = max(1, $page);
+        $normalizedPerPage = max(1, min(50, $perPage));
+        [$whereSql, $params] = $this->buildOrdersRangeFilter($fromDate, $toDate);
+
+        $statement = $this->pdo->prepare(
+            'SELECT * FROM orders'
+            . $whereSql
+            . ' ORDER BY ordered_at DESC, id DESC'
+        );
+        $statement->execute($params);
+
+        $rows = $this->filterOrderRowsBySerialSearch($statement->fetchAll(), $serialSearch);
+        $counts = [
+            OrderService::STATUS_PENDING => 0,
+            OrderService::STATUS_PREPARING => 0,
+            OrderService::STATUS_DELIVERED => 0,
+            OrderService::STATUS_CANCELLED => 0,
+        ];
+
         foreach ($rows as $row) {
             if (!is_array($row)) {
                 continue;
             }
 
-            $orderIds[] = (int) ($row['id'] ?? 0);
-        }
-
-        $itemsMap = $this->loadOrderItemsMap($orderIds);
-        $orders = [];
-
-        foreach ($rows as $row) {
-            if (!is_array($row)) {
+            $status = OrderService::normalizeStatusFilter((string) ($row['status'] ?? '')) ?? (string) ($row['status'] ?? '');
+            if (!array_key_exists($status, $counts)) {
                 continue;
             }
 
-            $orders[] = $this->hydrateOrder($row, $itemsMap);
+            $counts[$status] += 1;
         }
 
-        return $orders;
+        $allTotal = count($rows);
+        $rows = $this->filterOrderRowsByStatus($rows, $statusFilter);
+        $total = count($rows);
+        $totalPages = max(1, (int) ceil($total / $normalizedPerPage));
+        $currentPage = min($normalizedPage, $totalPages);
+        $offset = ($currentPage - 1) * $normalizedPerPage;
+        $pageRows = array_slice($rows, $offset, $normalizedPerPage);
+
+        return [
+            'orders' => $this->hydrateOrdersFromRows($pageRows),
+            'total' => $total,
+            'all_total' => $allTotal,
+            'counts' => $counts,
+            'page' => $currentPage,
+            'per_page' => $normalizedPerPage,
+            'total_pages' => $totalPages,
+            'has_more' => $currentPage < $totalPages,
+        ];
     }
 
     public function listOrdersByStatus(string $status): array
@@ -401,6 +426,102 @@ final class OrderRepository
         return $counts;
     }
 
+    private function buildOrdersRangeFilter(?string $fromDate, ?string $toDate): array
+    {
+        $where = [];
+        $params = [];
+
+        if ($fromDate !== null && $fromDate !== '') {
+            $where[] = 'ordered_at >= :from_date';
+            $params['from_date'] = $fromDate . ' 00:00:00';
+        }
+
+        if ($toDate !== null && $toDate !== '') {
+            $endDate = new DateTimeImmutable($toDate . ' 00:00:00');
+            $where[] = 'ordered_at < :to_date';
+            $params['to_date'] = $endDate->modify('+1 day')->format('Y-m-d H:i:s');
+        }
+
+        $whereSql = $where !== [] ? ' WHERE ' . implode(' AND ', $where) : '';
+
+        return [$whereSql, $params];
+    }
+
+    private function filterOrderRowsBySerialSearch(array $rows, ?string $serialSearch): array
+    {
+        $needle = OrderService::normalizeSerialSearch($serialSearch);
+        if ($needle === '') {
+            return $rows;
+        }
+
+        $filtered = [];
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $serialNumber = (int) ($row['serial_number'] ?? 0);
+            $formattedSerial = OrderService::formatSerialNumber($serialNumber);
+            $legacySerial = str_pad((string) max(0, $serialNumber), 6, '0', STR_PAD_LEFT);
+
+            if (!str_contains($formattedSerial, $needle) && !str_contains($legacySerial, $needle)) {
+                continue;
+            }
+
+            $filtered[] = $row;
+        }
+
+        return $filtered;
+    }
+
+    private function filterOrderRowsByStatus(array $rows, ?string $statusFilter): array
+    {
+        if ($statusFilter === null || $statusFilter === '') {
+            return $rows;
+        }
+
+        $filtered = [];
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $rowStatus = OrderService::normalizeStatusFilter((string) ($row['status'] ?? '')) ?? (string) ($row['status'] ?? '');
+            if ($rowStatus !== $statusFilter) {
+                continue;
+            }
+
+            $filtered[] = $row;
+        }
+
+        return $filtered;
+    }
+
+    private function hydrateOrdersFromRows(array $rows): array
+    {
+        $orderIds = [];
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $orderIds[] = (int) ($row['id'] ?? 0);
+        }
+
+        $itemsMap = $this->loadOrderItemsMap($orderIds);
+        $orders = [];
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $orders[] = $this->hydrateOrder($row, $itemsMap);
+        }
+
+        return $orders;
+    }
+
     private function listOrdersByStatusLimited(string $status, ?int $limit): array
     {
         $statement = $this->pdo->prepare(
@@ -437,27 +558,33 @@ final class OrderRepository
         return $orders;
     }
 
-    public function updateStatus(int $orderId, string $status, ?string $cancelReason = null): Order
+    public function updateStatus(int $orderId, string $status, ?string $cancelReason = null, ?string $deliveredBy = null): Order
     {
-        return $this->transaction(function () use ($orderId, $status, $cancelReason): Order {
+        return $this->transaction(function () use ($orderId, $status, $cancelReason, $deliveredBy): Order {
             $currentOrderRow = $this->requireOrderRowById($orderId, true);
 
             $preparingAt = $currentOrderRow['preparing_at'] !== null ? (string) $currentOrderRow['preparing_at'] : null;
             $closedAt = $currentOrderRow['closed_at'] !== null ? (string) $currentOrderRow['closed_at'] : null;
+            $resolvedDeliveredBy = null;
 
             if ($status === OrderService::STATUS_PREPARING && $preparingAt === null) {
                 $preparingAt = date('Y-m-d H:i:s');
             }
 
-            if (in_array($status, [OrderService::STATUS_RECEIVED, OrderService::STATUS_CANCELLED], true)) {
+            if (in_array($status, [OrderService::STATUS_DELIVERED, OrderService::STATUS_CANCELLED], true)) {
                 $closedAt = date('Y-m-d H:i:s');
             } elseif ($status === OrderService::STATUS_PREPARING) {
                 $closedAt = null;
             }
 
+            if ($status === OrderService::STATUS_DELIVERED) {
+                $resolvedDeliveredBy = $deliveredBy !== null ? trim($deliveredBy) : null;
+            }
+
             $statement = $this->pdo->prepare(
                 'UPDATE orders
                  SET status = :status,
+                     delivered_by = :delivered_by,
                      cancel_reason = :cancel_reason,
                      preparing_at = :preparing_at,
                      closed_at = :closed_at
@@ -467,6 +594,7 @@ final class OrderRepository
             $statement->execute([
                 'id' => $orderId,
                 'status' => $status,
+                'delivered_by' => $resolvedDeliveredBy,
                 'cancel_reason' => $cancelReason,
                 'preparing_at' => $preparingAt,
                 'closed_at' => $closedAt,
@@ -483,7 +611,7 @@ final class OrderRepository
 
     private function requireOrderRowById(int $orderId, bool $forUpdate = false): array
     {
-        $sql = 'SELECT id, status, preparing_at, closed_at
+        $sql = 'SELECT id, status, delivered_by, preparing_at, closed_at
                 FROM orders
                 WHERE id = :id';
 
@@ -546,11 +674,12 @@ final class OrderRepository
             'id' => (int) ($row['id'] ?? 0),
             'serial_number' => (int) ($row['serial_number'] ?? 0),
             'serial' => OrderService::formatSerialNumber((int) ($row['serial_number'] ?? 0)),
-            'status' => (string) ($row['status'] ?? ''),
+            'status' => OrderService::normalizeStatusFilter((string) ($row['status'] ?? '')) ?? (string) ($row['status'] ?? ''),
             'customer_name' => (string) ($row['customer_name'] ?? ''),
             'address' => (string) ($row['address'] ?? ''),
             'phone_primary' => (string) ($row['phone_primary'] ?? ''),
             'phone_secondary' => $row['phone_secondary'] !== null ? (string) $row['phone_secondary'] : null,
+            'delivered_by' => $row['delivered_by'] !== null ? (string) $row['delivered_by'] : null,
             'cancel_reason' => $row['cancel_reason'] !== null ? (string) $row['cancel_reason'] : null,
             'total_amount' => $this->normalizePrice($row['total_amount'] ?? 0),
             'ordered_at' => (string) ($row['ordered_at'] ?? ''),

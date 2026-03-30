@@ -29,7 +29,7 @@ final class MenuRepository
             ->fetchAll();
 
         $itemRows = $this->pdo
-            ->query('SELECT id, subcategory_id, name_ar, name_en, image_url, base_price, sort_order FROM items ORDER BY sort_order ASC, id ASC')
+            ->query('SELECT id, subcategory_id, name_ar, name_en, image_url, base_price, is_out_of_stock, sort_order FROM items ORDER BY sort_order ASC, id ASC')
             ->fetchAll();
 
         $sizeRows = $this->pdo
@@ -65,6 +65,7 @@ final class MenuRepository
                 'id' => $itemId,
                 'image_url' => (string) ($row['image_url'] ?? ''),
                 'price' => $this->normalizePrice($row['base_price'] ?? 0),
+                'is_out_of_stock' => (bool) ($row['is_out_of_stock'] ?? false),
                 'sizes' => $sizeMap[$itemId] ?? [],
             ], MenuItem::class);
             $item->name = ArrayObjectMapper::map([
@@ -148,8 +149,8 @@ final class MenuRepository
             $this->requireSubcategory($subcategoryId);
 
             $statement = $this->pdo->prepare(
-                'INSERT INTO items (subcategory_id, name_ar, name_en, image_url, base_price, sort_order)
-                 VALUES (:subcategory_id, :name_ar, :name_en, :image_url, :base_price, :sort_order)'
+                'INSERT INTO items (subcategory_id, name_ar, name_en, image_url, base_price, is_out_of_stock, sort_order)
+                 VALUES (:subcategory_id, :name_ar, :name_en, :image_url, :base_price, :is_out_of_stock, :sort_order)'
             );
 
             $statement->execute([
@@ -158,6 +159,7 @@ final class MenuRepository
                 'name_en' => (string) $itemData['name_en'],
                 'image_url' => (string) $itemData['image_url'],
                 'base_price' => $this->toStoragePrice($itemData['price']),
+                'is_out_of_stock' => !empty($itemData['is_out_of_stock']) ? 1 : 0,
                 'sort_order' => $this->nextItemSortOrder($subcategoryId),
             ]);
 
@@ -175,7 +177,8 @@ final class MenuRepository
                  SET name_ar = :name_ar,
                      name_en = :name_en,
                      image_url = :image_url,
-                     base_price = :base_price
+                     base_price = :base_price,
+                     is_out_of_stock = :is_out_of_stock
                  WHERE id = :id'
             );
 
@@ -185,6 +188,7 @@ final class MenuRepository
                 'name_en' => (string) $itemData['name_en'],
                 'image_url' => (string) $itemData['image_url'],
                 'base_price' => $this->toStoragePrice($itemData['price']),
+                'is_out_of_stock' => !empty($itemData['is_out_of_stock']) ? 1 : 0,
             ]);
 
             $this->replaceItemSizes((int) $itemRow['id'], $itemData['sizes'] ?? []);
@@ -231,6 +235,25 @@ final class MenuRepository
                 'label' => (string) $subcategoryData['label'],
                 'sort_order' => $this->nextSubcategorySortOrder($categoryId),
                 'filter_sort_order' => $this->nextFilterSortOrder(),
+            ]);
+        });
+    }
+
+    public function createCategory(array $categoryData): Menu
+    {
+        return $this->transaction(function () use ($categoryData): void {
+            $categoryId = (string) $categoryData['id'];
+            $this->assertCategoryDoesNotExist($categoryId);
+
+            $statement = $this->pdo->prepare(
+                'INSERT INTO categories (id, label, sort_order)
+                 VALUES (:id, :label, :sort_order)'
+            );
+
+            $statement->execute([
+                'id' => $categoryId,
+                'label' => (string) $categoryData['label'],
+                'sort_order' => $this->nextCategorySortOrder(),
             ]);
         });
     }
@@ -392,6 +415,18 @@ final class MenuRepository
         }
     }
 
+    private function assertCategoryDoesNotExist(string $categoryId): void
+    {
+        $statement = $this->pdo->prepare('SELECT COUNT(*) FROM categories WHERE id = :id');
+        $statement->execute([
+            'id' => $categoryId,
+        ]);
+
+        if ((int) $statement->fetchColumn() > 0) {
+            throw new RuntimeException('Category id already exists.');
+        }
+    }
+
     private function requireItemByIndex(string $subcategoryId, int $itemIndex): array
     {
         $statement = $this->pdo->prepare(
@@ -466,6 +501,12 @@ final class MenuRepository
             'category_id' => $categoryId,
         ]);
 
+        return (int) $statement->fetchColumn();
+    }
+
+    private function nextCategorySortOrder(): int
+    {
+        $statement = $this->pdo->query('SELECT COALESCE(MAX(sort_order), 0) + 1 FROM categories');
         return (int) $statement->fetchColumn();
     }
 

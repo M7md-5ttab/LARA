@@ -65,7 +65,7 @@ try {
         <div class="order-card-head">
           <span class="order-kicker">Order Tracking</span>
           <h1>Order #<?= e($order->serial) ?></h1>
-          <p>Your order details are below. We will update the status from pending to preparing, then to received or cancelled if needed.</p>
+          <p>Your order details are below. We will update the status from pending to preparing, then to delivered or cancelled if needed.</p>
         </div>
         <div class="order-card-body">
           <div class="order-meta-grid">
@@ -81,6 +81,12 @@ try {
               <span class="order-meta-label">Total</span>
               <span class="order-meta-value"><?= e(OrderService::formatMoney($order->total_amount)) ?></span>
             </div>
+            <?php if ($order->status === OrderService::STATUS_DELIVERED && $order->delivered_by !== null && trim($order->delivered_by) !== ''): ?>
+              <div class="order-meta">
+                <span class="order-meta-label">Delivered By</span>
+                <span class="order-meta-value"><?= e($order->delivered_by) ?></span>
+              </div>
+            <?php endif; ?>
           </div>
 
           <div class="order-detail-grid">

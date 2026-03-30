@@ -208,6 +208,7 @@ nav a:hover::after {
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, .06);
   transition: transform .25s ease, box-shadow .25s ease;
+  position: relative;
   display: flex; 
   flex-direction: column; 
   overflow: hidden;
@@ -223,6 +224,31 @@ nav a:hover::after {
   height: 200px; 
   object-fit: cover; 
   display: block; 
+}
+
+.menu-item-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: .42rem .72rem;
+  border-radius: 999px;
+  background: rgba(122, 32, 32, 0.94);
+  color: #fff7f0;
+  font-family: var(--body-font);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  box-shadow: 0 12px 24px rgba(122, 32, 32, 0.22);
+}
+
+.menu-item-out-of-stock .menu-item-img {
+  filter: grayscale(.18) saturate(.62);
+  opacity: .82;
 }
 
 .menu-item-content { 
@@ -331,6 +357,10 @@ nav a:hover::after {
   opacity: 1;
 }
 
+.menu-item-sizes[data-disabled="1"]::after {
+  opacity: 0.38;
+}
+
 .menu-item-sizes .size-select:hover,
 .menu-item-sizes .size-trigger:hover {
   border-color: rgba(116, 95, 39, 0.45);
@@ -342,6 +372,23 @@ nav a:hover::after {
 .menu-item-sizes .size-trigger:focus {
   border-color: var(--secondary-color);
   box-shadow: 0 0 0 4px rgba(116, 95, 39, 0.15);
+}
+
+.menu-item-sizes .size-select:disabled,
+.menu-item-sizes .size-trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+  border-color: rgba(116, 95, 39, 0.18);
+  background: linear-gradient(180deg, rgba(116, 95, 39, 0.05), rgba(0, 0, 0, 0.02));
+  box-shadow: none;
+  transform: none;
+}
+
+.menu-item-sizes .size-select:disabled:hover,
+.menu-item-sizes .size-trigger:disabled:hover {
+  transform: none;
+  background: linear-gradient(180deg, rgba(116, 95, 39, 0.05), rgba(0, 0, 0, 0.02));
+  border-color: rgba(116, 95, 39, 0.18);
 }
 
 .size-dropdown {
@@ -460,6 +507,21 @@ nav a:hover::after {
 
 .add-to-cart-btn:active { 
   transform: scale(0.97); 
+}
+
+.add-to-cart-btn:disabled {
+  cursor: not-allowed;
+  background: #b7a38e;
+  color: #fffaf4;
+  transform: none;
+  min-width: 130px;
+  padding-inline: .95rem;
+  font-size: .82rem;
+}
+
+.add-to-cart-btn:disabled:hover {
+  background: #b7a38e;
+  transform: none;
 }
 
 /* Footer */
