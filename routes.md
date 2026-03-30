@@ -219,12 +219,12 @@ This project uses file-based routing.
   - Stores the file under `uploads/menu/`.
   - Returns JSON with the saved relative URL.
 
-### `GET /api/telegram/check/`
 ### `POST /api/telegram/check/`
 - Handler: [`api/telegram/check/index.php`](/media/m7md/Programming/projects/LARA/api/telegram/check/index.php)
 - Purpose: Returns order summary counts for Telegram `/check`.
 - Auth:
-  - Public.
+  - Requires the internal Telegram bridge header.
+  - Requires an active Telegram member with `/check` permission.
 - Behavior:
   - Counts orders by status from the database.
   - Returns the latest pending orders with serial, customer, total, and ordered time.

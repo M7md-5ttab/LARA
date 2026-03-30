@@ -33,6 +33,7 @@ header('X-Frame-Options: ' . ($isEmbeddedAdminPage ? 'SAMEORIGIN' : 'DENY'));
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: no-referrer');
 header('Permissions-Policy: geolocation=(), camera=(), microphone=()');
+HttpCache::applyNoStore();
 header(
     "Content-Security-Policy: default-src 'self'; base-uri 'none'; object-src 'none'; "
     . "frame-ancestors " . ($isEmbeddedAdminPage ? "'self'" : "'none'") . "; "
@@ -75,7 +76,7 @@ function admin_json(array $payload, int $status = 200): void
 {
     http_response_code($status);
     header('Content-Type: application/json; charset=UTF-8');
-    header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+    HttpCache::applyNoStore();
     echo json_encode($payload, JSON_UNESCAPED_UNICODE);
     exit;
 }

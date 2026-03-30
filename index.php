@@ -20,10 +20,10 @@ $subcategoriesById = $menu->subcategoriesById();
   <meta name="description" content="Discover our cafe & restaurant menu with fresh coffee, delicious meals, online ordering, and table reservations in a cozy atmosphere.">
 
   <!-- Styles -->
-    <link rel="stylesheet" href="main.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="<?= e(HttpCache::versionedAssetUrl('main.css')) ?>">
+    <link rel="stylesheet" href="<?= e(HttpCache::versionedAssetUrl('style.css')) ?>">
 
-    <link rel="shortcut icon" href="img/Untitled design.png" type="image/x-icon">
+    <link rel="shortcut icon" href="<?= e(HttpCache::versionedAssetUrl('img/Untitled design.png')) ?>" type="image/x-icon">
   <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"/>
   <link rel="stylesheet" href="https://unpkg.com/lenis@1.3.11/dist/lenis.css">
   
@@ -262,10 +262,10 @@ $subcategoriesById = $menu->subcategoriesById();
 
       <!-- Social Links -->
       <div class="social-links">
-            <a href="https://www.instagram.com/laracafeofficial?igsh=bjFoZW00bXg2eWs4" target="_blank" class="social-btn"><i class="fab fa-instagram"></i></a>
-            <a href="https://api.whatsapp.com/send/?phone=%2B201508803316&text&type=phone_number&app_absent=0" target="_blank" class="social-btn"><i class="fab fa-whatsapp"></i></a>
-            <a href="https://www.facebook.com/share/17imBTUjdp/?mibextid=wwXIfr" target="_blank" class="social-btn"><i class="fab fa-facebook-f"></i></a>
-            <a href="https://www.tiktok.com/@laracoffeeandlounge?_r=1&_d=ehklaichm6f4cj&sec_uid=MS4wLjABAAAAOSDlcrJWRsH53ltQkKXbahgTKnl4NdTBCErtq2NNj-CmS7eEH7gbGQqgy68wg6Ox&share_author_id=7498871143430063159&sharer_language=en&source=h5_m&u_code=die2ga38kja90f&item_author_type=2&utm_source=copy&tt_from=copy&enable_checksum=1&utm_medium=ios&share_link_id=68934C32-D482-42BB-A08D-EE8F91F3B7D2&user_id=6960387747669033989&sec_user_id=MS4wLjABAAAAyYbz2MrKr99EZfrL6JwajVVPtRE0yflRLkNeQ_mDPh4JyPtil3dflImfvyVTNlC-&social_share_type=5&ug_btm=b5836,b0&utm_campaign=client_share&share_app_id=1233" target="_blank" class="social-btn"><i class="bi bi-tiktok"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tiktok" viewBox="0 0 16 16">
+            <a href="https://www.instagram.com/laracafeofficial?igsh=bjFoZW00bXg2eWs4" target="_blank" rel="noopener noreferrer" class="social-btn"><i class="fab fa-instagram"></i></a>
+            <a href="https://api.whatsapp.com/send/?phone=%2B201508803316&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer" class="social-btn"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://www.facebook.com/share/17imBTUjdp/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://www.tiktok.com/@laracoffeeandlounge?_r=1&_d=ehklaichm6f4cj&sec_uid=MS4wLjABAAAAOSDlcrJWRsH53ltQkKXbahgTKnl4NdTBCErtq2NNj-CmS7eEH7gbGQqgy68wg6Ox&share_author_id=7498871143430063159&sharer_language=en&source=h5_m&u_code=die2ga38kja90f&item_author_type=2&utm_source=copy&tt_from=copy&enable_checksum=1&utm_medium=ios&share_link_id=68934C32-D482-42BB-A08D-EE8F91F3B7D2&user_id=6960387747669033989&sec_user_id=MS4wLjABAAAAyYbz2MrKr99EZfrL6JwajVVPtRE0yflRLkNeQ_mDPh4JyPtil3dflImfvyVTNlC-&social_share_type=5&ug_btm=b5836,b0&utm_campaign=client_share&share_app_id=1233" target="_blank" rel="noopener noreferrer" class="social-btn"><i class="bi bi-tiktok"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tiktok" viewBox="0 0 16 16">
   <path d="M9 0h1.98c.144.715.54 1.617 1.235 2.512C12.895 3.389 13.797 4 15 4v2c-1.753 0-3.07-.814-4-1.829V11a5 5 0 1 1-5-5v2a3 3 0 1 0 3 3z"/>
 </svg></i></a>
             <!-- <a href="https://" target="_blank" class="social-btn"><i class="fas fa-globe"></i></a> -->
@@ -273,13 +273,13 @@ $subcategoriesById = $menu->subcategoriesById();
 
     <p class="copyright">
   Designed & Developed by 
-  <a href="https://www.facebook.com/NextGen555" target="_blank" class="animated-name">NextGen@Mostafa Elkellawey</a>
+  <a href="https://www.facebook.com/NextGen555" target="_blank" rel="noopener noreferrer" class="animated-name">NextGen@Mostafa Elkellawey</a>
     </p>
     </div>
   </footer>
 
   <!-- Scripts -->
-  <script src="script.js"></script>
+  <script src="<?= e(HttpCache::versionedAssetUrl('script.js')) ?>"></script>
   <script src="https://unpkg.com/lenis@1.3.11/dist/lenis.min.js"></script> 
 
   <!-- (Removed unused template script that relied on missing data-* markup) -->

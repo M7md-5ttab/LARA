@@ -317,8 +317,8 @@ final class OrderService
         }
 
         $text = implode("\n", [
-            'I ordered an order with serial ' . $order->serial . '.',
-            'How long will it take to be ready?',
+            'ان طلبت الاوردر رقم  ' . $order->serial . '.',
+            'هياخد وقت قد ايه عشان يوصل ؟',
             'Track: ' . $this->buildPublicOrderUrl($order, $baseUrl),
         ]);
 

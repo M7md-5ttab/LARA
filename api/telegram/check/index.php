@@ -8,8 +8,62 @@ function telegram_check_json(array $payload, int $status = 200): void
 {
     http_response_code($status);
     header('Content-Type: application/json; charset=UTF-8');
+    HttpCache::applyNoStore();
     echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
+}
+
+function telegram_check_payload(): array
+{
+    if ($_POST !== []) {
+        return $_POST;
+    }
+
+    $raw = trim((string) file_get_contents('php://input'));
+    if ($raw === '') {
+        return [];
+    }
+
+    $decoded = json_decode($raw, true);
+    if (!is_array($decoded)) {
+        throw new RuntimeException('Invalid JSON body.');
+    }
+
+    return $decoded;
+}
+
+function telegram_check_require_bridge(): void
+{
+    $expected = TelegramBotConfig::getBridgeSecret();
+    if ($expected === '') {
+        throw new RuntimeException('Telegram bot bridge is not configured.');
+    }
+
+    $provided = trim((string) ($_SERVER['HTTP_X_TELEGRAM_BOT_BRIDGE'] ?? ''));
+    if ($provided === '' || !hash_equals($expected, $provided)) {
+        telegram_check_json([
+            'ok' => false,
+            'error' => 'Unauthorized',
+        ], 403);
+    }
+}
+
+function telegram_check_require_chat_id(array $payload): string
+{
+    $chatId = trim((string) ($payload['chat_id'] ?? ''));
+    if ($chatId === '') {
+        throw new RuntimeException('معرّف الشات مطلوب.');
+    }
+
+    return $chatId;
+}
+
+function telegram_check_forbidden(string $message): void
+{
+    telegram_check_json([
+        'ok' => false,
+        'error' => $message,
+    ], 403);
 }
 
 function telegram_check_datetime_ar(?string $value): string
@@ -31,7 +85,7 @@ function telegram_check_money_ar(int|float $amount): string
     return number_format((float) $amount, 2, '.', '') . ' ج.م';
 }
 
-if (!in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['GET', 'POST'], true)) {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
     telegram_check_json([
         'ok' => false,
         'error' => 'Method not allowed',
@@ -39,6 +93,19 @@ if (!in_array($_SERVER['REQUEST_METHOD'] ?? 'GET', ['GET', 'POST'], true)) {
 }
 
 try {
+    telegram_check_require_bridge();
+
+    $payload = telegram_check_payload();
+    $chatId = telegram_check_require_chat_id($payload);
+    $recipientRepository = new TelegramNotificationRecipientRepository();
+    if ($recipientRepository->findActiveRecipientByChatId($chatId) === null) {
+        telegram_check_forbidden('هذا الشات غير مصرح له بعرض ملخص الطلبات.');
+    }
+
+    if (!$recipientRepository->canUseCommand($chatId, 'check')) {
+        telegram_check_forbidden('هذا الشات غير مصرح له باستخدام /check.');
+    }
+
     $repository = new OrderRepository();
 
     $counts = [
@@ -78,15 +145,12 @@ try {
         $pending[] = [
             'serial' => $order->serial,
             'customer_name' => $order->customer_name,
-            'phone_primary' => $order->phone_primary,
-            'phone_secondary' => $order->phone_secondary,
             'total_amount' => (float) $order->total_amount,
             'total_amount_display' => OrderService::formatMoney($order->total_amount),
             'total_amount_display_ar' => telegram_check_money_ar($order->total_amount),
             'ordered_at' => $order->ordered_at,
             'ordered_at_display' => OrderService::formatDateTime($order->ordered_at),
             'ordered_at_display_ar' => telegram_check_datetime_ar($order->ordered_at),
-            'manage_url' => AppUrl::url('/admin/dashboard/?view=orders'),
         ];
     }
 

@@ -97,7 +97,7 @@ $inactiveCount = count($recipients) - $activeCount;
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Telegram Notifications • LARA</title>
-  <link rel="stylesheet" href="/admin/assets/admin.css">
+  <link rel="stylesheet" href="<?= e(HttpCache::versionedAssetUrl('admin/assets/admin.css')) ?>">
 </head>
 <body class="admin-body">
   <div class="orders-shell<?= $embedded ? ' orders-shell-embedded' : '' ?>">
@@ -146,14 +146,17 @@ $inactiveCount = count($recipients) - $activeCount;
 
           <span class="dash-user-badge" title="Logged in as <?= e($username) ?>"><?= e(strtoupper(substr($username, 0, 1))) ?></span>
 
-          <a class="dash-tab dash-tab-logout" href="/admin/logout/" title="Logout" aria-label="Logout">
-            <svg class="dash-tab-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M10 4.75H6.75a2 2 0 0 0-2 2v10.5a2 2 0 0 0 2 2H10"></path>
-              <path d="M13 8.25 17 12l-4 3.75"></path>
-              <path d="M8.5 12H17"></path>
-            </svg>
-            <span class="dash-tab-label">Logout</span>
-          </a>
+          <form method="post" action="/admin/logout/" class="admin-logout-form">
+            <input type="hidden" name="csrf_token" value="<?= e(admin_csrf_token()) ?>">
+            <button class="dash-tab dash-tab-logout" type="submit" title="Logout" aria-label="Logout">
+              <svg class="dash-tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M10 4.75H6.75a2 2 0 0 0-2 2v10.5a2 2 0 0 0 2 2H10"></path>
+                <path d="M13 8.25 17 12l-4 3.75"></path>
+                <path d="M8.5 12H17"></path>
+              </svg>
+              <span class="dash-tab-label">Logout</span>
+            </button>
+          </form>
         </div>
       </header>
     <?php endif; ?>

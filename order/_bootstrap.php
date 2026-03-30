@@ -27,7 +27,15 @@ if (!isset($_SESSION['order_csrf_token']) || !is_string($_SESSION['order_csrf_to
 }
 
 header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
 header('Referrer-Policy: strict-origin-when-cross-origin');
+header('Permissions-Policy: geolocation=(), camera=(), microphone=()');
+HttpCache::applyPrivatePage();
+header(
+    "Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; "
+    . "img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://pro.fontawesome.com https://unpkg.com; "
+    . "font-src 'self' data: https:; script-src 'self' https://unpkg.com; connect-src 'self'; form-action 'self'"
+);
 
 if (!function_exists('e')) {
     function e(string $value): string
@@ -56,11 +64,7 @@ function order_require_csrf(): void
 
 function order_base_url(): string
 {
-    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
-    $scheme = $isHttps ? 'https' : 'http';
-    $host = (string) ($_SERVER['HTTP_HOST'] ?? 'localhost');
-
-    return AppUrl::baseUrl($scheme . '://' . $host);
+    return AppUrl::requestBaseUrl();
 }
 
 function order_redirect(string $path): void
@@ -73,6 +77,7 @@ function order_json(array $payload, int $status = 200): void
 {
     http_response_code($status);
     header('Content-Type: application/json; charset=UTF-8');
+    HttpCache::applyNoStore();
     echo json_encode($payload, JSON_UNESCAPED_UNICODE);
     exit;
 }

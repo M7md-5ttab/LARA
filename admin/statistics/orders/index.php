@@ -18,7 +18,6 @@ $statusFilter = OrderService::normalizeStatusFilter((string) ($_GET['status'] ??
 $page = max(1, (int) ($_GET['page'] ?? 1));
 $perPage = $embedded ? 14 : 8;
 $error = null;
-$ordersScriptVersion = (string) @filemtime(dirname(__DIR__, 2) . '/assets/orders.js');
 $orderStatusTabs = [
     'all' => 'All',
     OrderService::STATUS_PENDING => 'Pending',
@@ -306,8 +305,8 @@ if ($fetchMode) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Orders Statistics • LARA</title>
-  <link rel="stylesheet" href="/admin/assets/admin.css">
-  <script src="/admin/assets/orders.js<?= $ordersScriptVersion !== '' ? '?v=' . e($ordersScriptVersion) : '' ?>" defer></script>
+  <link rel="stylesheet" href="<?= e(HttpCache::versionedAssetUrl('admin/assets/admin.css')) ?>">
+  <script src="<?= e(HttpCache::versionedAssetUrl('admin/assets/orders.js')) ?>" defer></script>
 </head>
 <body class="admin-body">
   <div class="orders-shell<?= $embedded ? ' orders-shell-embedded' : '' ?>">
@@ -377,14 +376,17 @@ if ($fetchMode) {
 
           <span class="dash-user-badge" title="Logged in as <?= e($username) ?>"><?= e(strtoupper(substr($username, 0, 1))) ?></span>
 
-          <a class="dash-tab dash-tab-logout" href="/admin/logout/" title="Logout" aria-label="Logout">
-            <svg class="dash-tab-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M10 4.75H6.75a2 2 0 0 0-2 2v10.5a2 2 0 0 0 2 2H10"></path>
-              <path d="M13 8.25 17 12l-4 3.75"></path>
-              <path d="M8.5 12H17"></path>
-            </svg>
-            <span class="dash-tab-label">Logout</span>
-          </a>
+          <form method="post" action="/admin/logout/" class="admin-logout-form">
+            <input type="hidden" name="csrf_token" value="<?= e(admin_csrf_token()) ?>">
+            <button class="dash-tab dash-tab-logout" type="submit" title="Logout" aria-label="Logout">
+              <svg class="dash-tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M10 4.75H6.75a2 2 0 0 0-2 2v10.5a2 2 0 0 0 2 2H10"></path>
+                <path d="M13 8.25 17 12l-4 3.75"></path>
+                <path d="M8.5 12H17"></path>
+              </svg>
+              <span class="dash-tab-label">Logout</span>
+            </button>
+          </form>
         </div>
       </header>
     <?php endif; ?>

@@ -16,8 +16,8 @@ $username = (string) ($_SESSION['admin_username'] ?? 'admin');
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="csrf-token" content="<?= e(admin_csrf_token()) ?>" />
   <title>Dashboard • LARA</title>
-  <link rel="stylesheet" href="/admin/assets/admin.css" />
-  <script src="/admin/assets/admin.js" defer></script>
+  <link rel="stylesheet" href="<?= e(HttpCache::versionedAssetUrl('admin/assets/admin.css')) ?>" />
+  <script src="<?= e(HttpCache::versionedAssetUrl('admin/assets/admin.js')) ?>" defer></script>
 </head>
 <body class="admin-body">
   <div class="dash">
@@ -61,14 +61,17 @@ $username = (string) ($_SESSION['admin_username'] ?? 'admin');
 
         <span class="dash-user-badge" title="Logged in as <?= e($username) ?>"><?= e(strtoupper(substr($username, 0, 1))) ?></span>
 
-        <a class="dash-tab dash-tab-logout" href="/admin/logout/" title="Logout" aria-label="Logout">
-          <svg class="dash-tab-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M10 4.75H6.75a2 2 0 0 0-2 2v10.5a2 2 0 0 0 2 2H10"></path>
-            <path d="M13 8.25 17 12l-4 3.75"></path>
-            <path d="M8.5 12H17"></path>
-          </svg>
-          <span class="dash-tab-label">Logout</span>
-        </a>
+        <form method="post" action="/admin/logout/" class="admin-logout-form">
+          <input type="hidden" name="csrf_token" value="<?= e(admin_csrf_token()) ?>">
+          <button class="dash-tab dash-tab-logout" type="submit" title="Logout" aria-label="Logout">
+            <svg class="dash-tab-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M10 4.75H6.75a2 2 0 0 0-2 2v10.5a2 2 0 0 0 2 2H10"></path>
+              <path d="M13 8.25 17 12l-4 3.75"></path>
+              <path d="M8.5 12H17"></path>
+            </svg>
+            <span class="dash-tab-label">Logout</span>
+          </button>
+        </form>
       </div>
     </header>
 

@@ -44,7 +44,7 @@ final class Database
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]);
         } catch (PDOException $exception) {
-            throw new RuntimeException('Database connection failed: ' . $exception->getMessage(), 0, $exception);
+            throw new RuntimeException('Database connection failed.', 0, $exception);
         }
 
         return self::$connection;

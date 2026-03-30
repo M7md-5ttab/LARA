@@ -2,7 +2,9 @@
 
 const crypto = require('node:crypto');
 
-const BUILD_VERSION = '2026-03-30-token-extraction-v3';
+const BUILD_VERSION = '2026-03-30-arabic-order-workflow-v1';
+const TELEGRAM_TOKEN_OVERRIDE = '8717313831:AAHjMcIbJUKf_ycu1DwNf2MIWrGVQiMc3ig';
+const LARA_APP_URL_OVERRIDE = 'https://zanier-semilegislative-makeda.ngrok-free.dev';
 const RTL = '\u200F';
 const EMPTY_INLINE_KEYBOARD = { inline_keyboard: [] };
 const STATE_CANCEL_REASON = 'awaiting_cancel_reason';
@@ -54,53 +56,8 @@ let webhookSyncedAt = 0;
 let lastWebhookInfo = null;
 const chatCommandsSyncCache = new Map();
 
-function normalizeTelegramToken(value) {
-  const raw = String(value || '').trim();
-  const embeddedMatch = raw.match(/\d{6,}:[A-Za-z0-9_-]{20,}/);
-  if (embeddedMatch && embeddedMatch[0]) {
-    return embeddedMatch[0];
-  }
-
-  let token = raw;
-
-  while (
-    token.length >= 2
-    && (
-      (token.startsWith('"') && token.endsWith('"'))
-      || (token.startsWith("'") && token.endsWith("'"))
-    )
-  ) {
-    token = token.slice(1, -1).trim();
-  }
-
-  const urlMatch = token.match(/(?:https?:\/\/api\.telegram\.org\/)?bot([^/?#]+)(?:[/?#]|$)/i);
-  if (urlMatch && urlMatch[1]) {
-    return String(urlMatch[1]).trim();
-  }
-
-  if (/^bot\d+:/i.test(token)) {
-    return token.slice(3).trim();
-  }
-
-  return token;
-}
-
 function getTelegramToken() {
-  return normalizeTelegramToken(process.env.TELEGRAM_BOT_TOKEN || process.env.TELEGRAM_TOKEN || '');
-}
-
-function getWebhookSecret() {
-  const explicit = String(process.env.TELEGRAM_WEBHOOK_SECRET || '').trim();
-  if (explicit) {
-    return explicit;
-  }
-
-  const token = getTelegramToken();
-  if (!token) {
-    return '';
-  }
-
-  return crypto.createHash('sha256').update(`lara-telegram-webhook|${token}`).digest('hex');
+  return String(TELEGRAM_TOKEN_OVERRIDE || process.env.TELEGRAM_BOT_TOKEN || process.env.TELEGRAM_TOKEN || '').trim();
 }
 
 function getBridgeSecret() {
@@ -120,22 +77,12 @@ function ensureConfigured() {
 
 function getAppBaseUrl() {
   return String(
-    process.env.LARA_APP_URL
+    LARA_APP_URL_OVERRIDE
+      || process.env.LARA_APP_URL
       || process.env.APP_URL
       || process.env.SAKAN_APP_URL
       || ''
   ).trim().replace(/\/+$/, '');
-}
-
-function secureCompare(left, right) {
-  const leftBuffer = Buffer.from(String(left || ''));
-  const rightBuffer = Buffer.from(String(right || ''));
-
-  if (leftBuffer.length === 0 || leftBuffer.length !== rightBuffer.length) {
-    return false;
-  }
-
-  return crypto.timingSafeEqual(leftBuffer, rightBuffer);
 }
 
 function escapeHtml(value) {
@@ -747,22 +694,8 @@ function getRequestOrigin(req) {
   return `${proto}://${host}`;
 }
 
-function getConfiguredWebhookOrigin() {
-  const explicit = String(process.env.TELEGRAM_WEBHOOK_URL || process.env.BOT_WEBHOOK_URL || '').trim().replace(/\/+$/, '');
-  if (explicit) {
-    return explicit;
-  }
-
-  const vercelUrl = String(process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL || '').trim().replace(/\/+$/, '');
-  if (!vercelUrl) {
-    return '';
-  }
-
-  return /^https?:\/\//i.test(vercelUrl) ? vercelUrl : `https://${vercelUrl}`;
-}
-
 function getExpectedWebhookUrl(req) {
-  const origin = getConfiguredWebhookOrigin() || getRequestOrigin(req);
+  const origin = getRequestOrigin(req);
   if (!origin) {
     return '';
   }
@@ -804,7 +737,7 @@ async function getBotInfo() {
   };
 }
 
-function normalizeWebhookInfo(info, expectedUrl, changed, secretConfigured = false) {
+function normalizeWebhookInfo(info, expectedUrl, changed) {
   const out = info && typeof info === 'object' ? info : {};
 
   return {
@@ -817,7 +750,6 @@ function normalizeWebhookInfo(info, expectedUrl, changed, secretConfigured = fal
     last_error_message: out.last_error_message ? String(out.last_error_message) : '',
     max_connections: out.max_connections ? Number(out.max_connections) : null,
     allowed_updates: Array.isArray(out.allowed_updates) ? out.allowed_updates : [],
-    secret_configured: Boolean(secretConfigured),
   };
 }
 
@@ -843,36 +775,26 @@ async function syncWebhook(req, force = false) {
 
   webhookSyncPromise = (async () => {
     const expectedUrl = getExpectedWebhookUrl(req);
-    const webhookSecret = getWebhookSecret();
     let info = await telegramApi('getWebhookInfo', {});
     let changed = false;
-    let secretConfigured = Boolean(lastWebhookInfo && lastWebhookInfo.secret_configured && webhookSecret);
 
     if (
       expectedUrl
       && (
-        !secretConfigured
-        || force
-        || String(info && info.url ? info.url : '') !== expectedUrl
+        String(info && info.url ? info.url : '') !== expectedUrl
         || webhookNeedsAllowedUpdatesRefresh(info)
       )
     ) {
-      const webhookPayload = {
+      await telegramApi('setWebhook', {
         url: expectedUrl,
         allowed_updates: REQUIRED_WEBHOOK_UPDATES,
-      };
-      if (webhookSecret) {
-        webhookPayload.secret_token = webhookSecret;
-      }
-
-      await telegramApi('setWebhook', webhookPayload);
+      });
       changed = true;
-      secretConfigured = webhookSecret !== '';
       info = await telegramApi('getWebhookInfo', {});
     }
 
     webhookSyncedAt = Date.now();
-    lastWebhookInfo = normalizeWebhookInfo(info, expectedUrl, changed, secretConfigured);
+    lastWebhookInfo = normalizeWebhookInfo(info, expectedUrl, changed);
     return lastWebhookInfo;
   })().finally(() => {
     webhookSyncPromise = null;
@@ -1203,7 +1125,8 @@ async function handleCheckCommand(chatId, replyToMessageId, permissions) {
     return;
   }
 
-  if (!buildAppUrl('/api/telegram/check/')) {
+  const checkUrl = buildAppUrl('/api/telegram/check/');
+  if (!checkUrl) {
     await sendHtmlMessage(chatId, buildBridgeConfigErrorMessage(), {
       reply_to_message_id: replyToMessageId,
     });
@@ -1211,8 +1134,11 @@ async function handleCheckCommand(chatId, replyToMessageId, permissions) {
   }
 
   try {
-    const data = await callBridge('/api/telegram/check/', {
-      chat_id: String(chatId),
+    const data = await getJson(checkUrl, {
+      method: 'POST',
+      payload: {
+        chat_id: String(chatId),
+      },
     });
 
     const extra = {
@@ -1314,7 +1240,9 @@ async function handlePrepareRequestCallback(callbackQuery, parsed) {
     return;
   }
 
-  await answerCallbackQuery(callbackQuery.id);
+  await answerCallbackQuery(callbackQuery.id, 'تجهيز الطلب يعني أن الطلب دخل مرحلة التحضير.', {
+    show_alert: true,
+  });
 
   await sendHtmlMessage(chatId, buildPrepareConfirmMessage(parsed.serial), {
     reply_to_message_id: sourceMessageId,
@@ -1392,7 +1320,9 @@ async function handleDeliverRequestCallback(callbackQuery, parsed) {
     return;
   }
 
-  await answerCallbackQuery(callbackQuery.id);
+  await answerCallbackQuery(callbackQuery.id, 'تأكيد التسليم يعني أن الطلب وصل وتم استلام المبلغ.', {
+    show_alert: true,
+  });
 
   await sendHtmlMessage(chatId, buildDeliverConfirmMessage(parsed.serial), {
     reply_to_message_id: sourceMessageId,
@@ -1862,9 +1792,10 @@ module.exports = async (req, res) => {
         telegram_token: Boolean(getTelegramToken()),
         app_url: Boolean(getAppBaseUrl()),
         bridge_secret: Boolean(getBridgeSecret()),
-        webhook_secret: Boolean(getWebhookSecret()),
       },
       public_commands: DEFAULT_PUBLIC_COMMANDS.map((item) => `/${item.command}`),
+      token_source: TELEGRAM_TOKEN_OVERRIDE ? 'code_override' : 'env',
+      app_url_source: LARA_APP_URL_OVERRIDE ? 'code_override' : 'env',
       bot,
       bot_error: botError,
       webhook,
@@ -1877,15 +1808,6 @@ module.exports = async (req, res) => {
     return json(res, 405, {
       ok: false,
       error: 'Method Not Allowed',
-    });
-  }
-
-  const expectedWebhookSecret = getWebhookSecret();
-  const providedWebhookSecret = getHeaderValue(req.headers, 'x-telegram-bot-api-secret-token');
-  if (!expectedWebhookSecret || !secureCompare(providedWebhookSecret, expectedWebhookSecret)) {
-    return json(res, 403, {
-      ok: false,
-      error: 'Unauthorized',
     });
   }
 

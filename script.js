@@ -314,6 +314,93 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const formatMoney = num => 'LE ' + (Number(num) || 0).toFixed(2);
   const recalcBadge = () => cartCount.textContent = cart.reduce((s, i) => s + i.qty, 0);
+  const safeCartImageSrc = (value) => {
+    const src = String(value || '').trim();
+    if (!src) return menuImageFallbackSrc;
+
+    try {
+      const url = new URL(src, window.location.origin);
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        return menuImageFallbackSrc;
+      }
+
+      return url.origin === window.location.origin
+        ? `${url.pathname}${url.search}${url.hash}`
+        : url.toString();
+    } catch (_error) {
+      return menuImageFallbackSrc;
+    }
+  };
+  const buildCartItem = (item, index) => {
+    const li = document.createElement('li');
+    li.className = 'cart-item';
+
+    const thumb = document.createElement('img');
+    thumb.className = 'cart-thumb';
+    thumb.alt = item.name;
+    thumb.loading = 'lazy';
+    thumb.decoding = 'async';
+    thumb.src = safeCartImageSrc(item.img);
+    thumb.addEventListener('error', () => {
+      thumb.src = menuImageFallbackSrc;
+    }, { once: true });
+
+    const name = document.createElement('span');
+    name.className = 'cart-item-name';
+    name.title = 'View details';
+    name.textContent = item.name;
+    name.addEventListener('click', e => {
+      e.stopPropagation();
+      alert(`Order Details:\n\n${item.name}\nUnit: ${formatMoney(item.price)}\nQty: ${item.qty}\nTotal: ${formatMoney(item.price * item.qty)}`);
+    });
+
+    const controls = document.createElement('div');
+    controls.className = 'cart-item-controls';
+
+    const decrease = document.createElement('button');
+    decrease.className = 'decrease';
+    decrease.type = 'button';
+    decrease.setAttribute('aria-label', 'Decrease quantity');
+    decrease.textContent = '-';
+    decrease.addEventListener('click', e => {
+      e.stopPropagation();
+      if (item.qty > 1) item.qty--;
+      else cart.splice(index, 1);
+      updateCart();
+    });
+
+    const qty = document.createElement('span');
+    qty.className = 'cart-item-qty';
+    qty.textContent = String(item.qty);
+
+    const increase = document.createElement('button');
+    increase.className = 'increase';
+    increase.type = 'button';
+    increase.setAttribute('aria-label', 'Increase quantity');
+    increase.textContent = '+';
+    increase.addEventListener('click', e => {
+      e.stopPropagation();
+      item.qty++;
+      updateCart();
+    });
+
+    controls.appendChild(decrease);
+    controls.appendChild(qty);
+    controls.appendChild(increase);
+
+    const price = document.createElement('span');
+    price.className = 'cart-item-price';
+    price.textContent = formatMoney(item.price * item.qty);
+
+    li.appendChild(thumb);
+    li.appendChild(name);
+    li.appendChild(controls);
+    li.appendChild(price);
+
+    li.addEventListener('click', e => e.stopPropagation());
+
+    return li;
+  };
 
   const updateCart = () => {
     cartList.innerHTML = '';
@@ -322,40 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       cartEmpty.style.display = 'none';
       cart.forEach((item, index) => {
-        const li = document.createElement('li');
-        li.className = 'cart-item';
-        li.innerHTML = `
-          <img src="${item.img}" alt="${item.name}" class="cart-thumb" />
-          <span class="cart-item-name" title="View details">${item.name}</span>
-          <div class="cart-item-controls">
-            <button class="decrease" aria-label="Decrease quantity">-</button>
-            <span class="cart-item-qty">${item.qty}</span>
-            <button class="increase" aria-label="Increase quantity">+</button>
-          </div>
-          <span class="cart-item-price">${formatMoney(item.price * item.qty)}</span>
-        `;
-
-        li.addEventListener('click', e => e.stopPropagation());
-
-        li.querySelector('.cart-item-name').addEventListener('click', e => {
-          e.stopPropagation();
-          alert(`Order Details:\n\n${item.name}\nUnit: ${formatMoney(item.price)}\nQty: ${item.qty}\nTotal: ${formatMoney(item.price * item.qty)}`);
-        });
-
-        li.querySelector('.increase').addEventListener('click', e => {
-          e.stopPropagation();
-          item.qty++;
-          updateCart();
-        });
-
-        li.querySelector('.decrease').addEventListener('click', e => {
-          e.stopPropagation();
-          if (item.qty > 1) item.qty--;
-          else cart.splice(index, 1);
-          updateCart();
-        });
-
-        cartList.appendChild(li);
+        cartList.appendChild(buildCartItem(item, index));
       });
     }
     const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
