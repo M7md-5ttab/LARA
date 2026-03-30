@@ -2,7 +2,7 @@
 
 const crypto = require('node:crypto');
 
-const BUILD_VERSION = '2026-03-30-token-normalization-v2';
+const BUILD_VERSION = '2026-03-30-token-extraction-v3';
 const RTL = '\u200F';
 const EMPTY_INLINE_KEYBOARD = { inline_keyboard: [] };
 const STATE_CANCEL_REASON = 'awaiting_cancel_reason';
