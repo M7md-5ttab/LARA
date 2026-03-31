@@ -58,16 +58,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Login • LARA</title>
-  <link rel="stylesheet" href="/admin/assets/admin.css" />
+  <title>Admin Login • Marvel</title>
+  <link rel="stylesheet" href="<?= e(HttpCache::versionedAssetUrl('admin/assets/admin.css')) ?>" />
 </head>
 <body class="admin-body">
   <main class="auth-shell">
     <section class="auth-card" aria-label="Admin login">
       <header class="auth-header">
-        <div class="auth-badge">LARA</div>
-        <h1>Admin Dashboard</h1>
-        <p>Sign in to manage menu categories and items.</p>
+        <div class="auth-badge">MARVEL</div>
+        <h1>Marvel Admin</h1>
+        <p>Sign in to manage Marvel menu, categories, items, and orders.</p>
       </header>
 
       <?php if ($error !== ''): ?>

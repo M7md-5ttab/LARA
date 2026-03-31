@@ -93,6 +93,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateTrigger = (select) => {
       const trigger = select?._sizeTrigger || null;
+      const wrap = select?.closest?.('.menu-item-sizes') || null;
+      if (trigger) {
+        trigger.disabled = !!select?.disabled;
+      }
+      if (wrap) {
+        if (select?.disabled) wrap.dataset.disabled = '1';
+        else delete wrap.dataset.disabled;
+      }
       if (!trigger) return;
       const opt = select.selectedOptions?.[0] || select.options?.[select.selectedIndex] || null;
       const nameEl = trigger.querySelector('.size-trigger-name');
@@ -118,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const openDropdown = (select, trigger) => {
-      if (!select || !trigger) return;
+      if (!select || !trigger || select.disabled || trigger.disabled) return;
       if (!listEl) return;
 
       if (activeSelect === select && !dropdown.hidden) {
@@ -241,11 +249,13 @@ document.addEventListener('DOMContentLoaded', () => {
       select.addEventListener('change', () => updateTrigger(select));
 
       trigger.addEventListener('click', (ev) => {
+        if (trigger.disabled) return;
         ev.preventDefault();
         ev.stopPropagation();
         openDropdown(select, trigger);
       });
       trigger.addEventListener('keydown', (ev) => {
+        if (trigger.disabled) return;
         if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowDown') {
           ev.preventDefault();
           openDropdown(select, trigger);
@@ -304,48 +314,113 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const formatMoney = num => 'LE ' + (Number(num) || 0).toFixed(2);
   const recalcBadge = () => cartCount.textContent = cart.reduce((s, i) => s + i.qty, 0);
+  const safeCartImageSrc = (value) => {
+    const src = String(value || '').trim();
+    if (!src) return menuImageFallbackSrc;
+
+    try {
+      const url = new URL(src, window.location.origin);
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        return menuImageFallbackSrc;
+      }
+
+      return url.origin === window.location.origin
+        ? `${url.pathname}${url.search}${url.hash}`
+        : url.toString();
+    } catch (_error) {
+      return menuImageFallbackSrc;
+    }
+  };
+  const buildCartItem = (item, index) => {
+    const li = document.createElement('li');
+    li.className = 'cart-item';
+
+    const thumb = document.createElement('img');
+    thumb.className = 'cart-thumb';
+    thumb.alt = item.name;
+    thumb.loading = 'lazy';
+    thumb.decoding = 'async';
+    thumb.src = safeCartImageSrc(item.img);
+    thumb.addEventListener('error', () => {
+      thumb.src = menuImageFallbackSrc;
+    }, { once: true });
+
+    const body = document.createElement('div');
+    body.className = 'cart-item-body';
+
+    const name = document.createElement('span');
+    name.className = 'cart-item-name';
+    name.title = item.name;
+    name.textContent = item.name;
+
+    const meta = document.createElement('span');
+    meta.className = 'cart-item-meta';
+    meta.textContent = `Unit ${formatMoney(item.price)}`;
+
+    const summary = document.createElement('div');
+    summary.className = 'cart-item-summary';
+
+    const controls = document.createElement('div');
+    controls.className = 'cart-item-controls';
+
+    const decrease = document.createElement('button');
+    decrease.className = 'decrease';
+    decrease.type = 'button';
+    decrease.setAttribute('aria-label', 'Decrease quantity');
+    decrease.textContent = '-';
+    decrease.addEventListener('click', e => {
+      e.stopPropagation();
+      if (item.qty > 1) item.qty--;
+      else cart.splice(index, 1);
+      updateCart();
+    });
+
+    const qty = document.createElement('span');
+    qty.className = 'cart-item-qty';
+    qty.textContent = String(item.qty);
+
+    const increase = document.createElement('button');
+    increase.className = 'increase';
+    increase.type = 'button';
+    increase.setAttribute('aria-label', 'Increase quantity');
+    increase.textContent = '+';
+    increase.addEventListener('click', e => {
+      e.stopPropagation();
+      item.qty++;
+      updateCart();
+    });
+
+    controls.appendChild(decrease);
+    controls.appendChild(qty);
+    controls.appendChild(increase);
+
+    const price = document.createElement('span');
+    price.className = 'cart-item-price';
+    price.textContent = formatMoney(item.price * item.qty);
+
+    summary.appendChild(controls);
+    summary.appendChild(price);
+    body.appendChild(name);
+    body.appendChild(meta);
+    body.appendChild(summary);
+
+    li.appendChild(thumb);
+    li.appendChild(body);
+
+    li.addEventListener('click', e => e.stopPropagation());
+
+    return li;
+  };
 
   const updateCart = () => {
+    cartDropdown.classList.toggle('has-items', cart.length > 0);
     cartList.innerHTML = '';
     if (!cart.length) {
       cartEmpty.style.display = 'block';
     } else {
       cartEmpty.style.display = 'none';
       cart.forEach((item, index) => {
-        const li = document.createElement('li');
-        li.className = 'cart-item';
-        li.innerHTML = `
-          <img src="${item.img}" alt="${item.name}" class="cart-thumb" />
-          <span class="cart-item-name" title="View details">${item.name}</span>
-          <div class="cart-item-controls">
-            <button class="decrease" aria-label="Decrease quantity">-</button>
-            <span class="cart-item-qty">${item.qty}</span>
-            <button class="increase" aria-label="Increase quantity">+</button>
-          </div>
-          <span class="cart-item-price">${formatMoney(item.price * item.qty)}</span>
-        `;
-
-        li.addEventListener('click', e => e.stopPropagation());
-
-        li.querySelector('.cart-item-name').addEventListener('click', e => {
-          e.stopPropagation();
-          alert(`Order Details:\n\n${item.name}\nUnit: ${formatMoney(item.price)}\nQty: ${item.qty}\nTotal: ${formatMoney(item.price * item.qty)}`);
-        });
-
-        li.querySelector('.increase').addEventListener('click', e => {
-          e.stopPropagation();
-          item.qty++;
-          updateCart();
-        });
-
-        li.querySelector('.decrease').addEventListener('click', e => {
-          e.stopPropagation();
-          if (item.qty > 1) item.qty--;
-          else cart.splice(index, 1);
-          updateCart();
-        });
-
-        cartList.appendChild(li);
+        cartList.appendChild(buildCartItem(item, index));
       });
     }
     const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
@@ -361,12 +436,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const openCart = () => {
     cartDropdown.classList.add('open');
     cartToggle.setAttribute('aria-expanded', 'true');
+    cartList.scrollTop = 0;
   };
 
   cartToggle.addEventListener('click', e => {
     e.stopPropagation();
-    cartDropdown.classList.toggle('open');
-    cartToggle.setAttribute('aria-expanded', cartDropdown.classList.contains('open'));
+    if (cartDropdown.classList.contains('open')) closeCart();
+    else openCart();
   });
 
   document.addEventListener('click', e => {
@@ -424,12 +500,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* Toast Notifications */
   const showToast = msg => {
+    document.querySelectorAll('.toast').forEach(toastEl => toastEl.remove());
+
     const toast = document.createElement('div');
     toast.className = 'toast';
+    toast.setAttribute('role', 'status');
     toast.textContent = msg;
     document.body.appendChild(toast);
     requestAnimationFrame(() => toast.classList.add('show'));
-    setTimeout(() => {
+    window.setTimeout(() => {
       toast.classList.remove('show');
       toast.addEventListener('transitionend', () => toast.remove(), { once: true });
     }, 2000);
@@ -438,7 +517,12 @@ document.addEventListener('DOMContentLoaded', () => {
   /* Add To Cart Buttons */
   document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
     btn.addEventListener('click', e => {
-      const itemEl = e.target.closest('.menu-item');
+      const itemEl = e.currentTarget.closest('.menu-item');
+      if ((itemEl?.dataset?.outOfStock || '') === '1' || btn.disabled) {
+        alert('This item is currently out of stock.');
+        return;
+      }
+
       const nameParts = Array
         .from(itemEl.querySelectorAll('h3'))
         .map(el => el.textContent?.trim() || '')

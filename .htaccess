@@ -14,8 +14,25 @@
 RedirectMatch 404 /\\.git
 
 <IfModule mod_headers.c>
-  Header always set X-Content-Type-Options "nosniff"
-  Header always set X-Frame-Options "DENY"
-  Header always set Referrer-Policy "no-referrer"
+  Header always setifempty X-Content-Type-Options "nosniff"
+  Header always setifempty X-Frame-Options "DENY"
+  Header always setifempty Referrer-Policy "no-referrer"
+
+  SetEnvIf Query_String "(^|&)v=" HAS_ASSET_VERSION=1
+
+  <FilesMatch "\.(?:css|js|mjs|png|jpe?g|gif|webp|svg|ico|woff2?|ttf)$">
+    Header unset Pragma
+    Header unset Expires
+    Header set Cache-Control "public, max-age=3600, stale-while-revalidate=86400"
+    Header set Cache-Control "public, max-age=31536000, immutable" env=HAS_ASSET_VERSION
+  </FilesMatch>
 </IfModule>
 
+<IfModule mod_expires.c>
+  ExpiresActive On
+  <FilesMatch "\.(?:css|js|mjs|png|jpe?g|gif|webp|svg|ico|woff2?|ttf)$">
+    ExpiresDefault "access plus 1 hour"
+  </FilesMatch>
+</IfModule>
+
+FileETag MTime Size

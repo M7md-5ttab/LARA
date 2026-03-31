@@ -172,7 +172,9 @@ This project uses file-based routing.
 - Behavior:
   - Lists all saved Telegram recipients.
   - Allows adding a new chat ID with an optional label.
-  - Allows enabling, disabling, editing, and deleting saved chat IDs.
+  - Allows enabling or disabling each member.
+  - Allows controlling new-order notifications, `/pending`, `/prepared`, `/check`, and `/help` per member.
+  - Allows editing and deleting saved chat IDs.
 
 ## Admin API Routes
 
@@ -217,16 +219,64 @@ This project uses file-based routing.
   - Stores the file under `uploads/menu/`.
   - Returns JSON with the saved relative URL.
 
-### `GET /api/telegram/check/`
 ### `POST /api/telegram/check/`
 - Handler: [`api/telegram/check/index.php`](/media/m7md/Programming/projects/LARA/api/telegram/check/index.php)
 - Purpose: Returns order summary counts for Telegram `/check`.
 - Auth:
-  - Public.
+  - Requires the internal Telegram bridge header.
+  - Requires an active Telegram member with `/check` permission.
 - Behavior:
   - Counts orders by status from the database.
   - Returns the latest pending orders with serial, customer, total, and ordered time.
   - Includes admin URLs built from `APP_URL` when configured.
+- Response type: JSON.
+
+### `POST /api/telegram/orders/`
+- Handler: [`api/telegram/orders/index.php`](/media/m7md/Programming/projects/LARA/api/telegram/orders/index.php)
+- Purpose: Telegram bridge endpoint for listing and updating orders from the bot.
+- Auth:
+  - Requires the internal Telegram bridge header.
+- Input:
+  - JSON body with `action`, `chat_id`, and action-specific fields such as `status`, `serial`, `reason`, or `delivered_by`.
+- Supported actions:
+  - `list_orders`
+  - `mark_preparing`
+  - `mark_delivered`
+  - `cancel_order`
+- Behavior:
+  - Verifies that the Telegram `chat_id` is active in Telegram settings.
+  - Verifies that the chat has permission for the requested command or workflow action.
+  - Lists pending or preparing orders for the bot.
+  - Applies order workflow changes used by inline Telegram actions.
+- Response type: JSON.
+
+### `POST /api/telegram/member/`
+- Handler: [`api/telegram/member/index.php`](/media/m7md/Programming/projects/LARA/api/telegram/member/index.php)
+- Purpose: Telegram bridge endpoint for loading a chat's current Telegram permissions.
+- Auth:
+  - Requires the internal Telegram bridge header.
+- Input:
+  - JSON body with `chat_id`.
+- Behavior:
+  - Returns whether the chat is active.
+  - Returns per-member flags for notifications, `/pending`, `/prepared`, `/check`, and `/help`.
+  - Returns the commands currently available to that chat.
+- Response type: JSON.
+
+### `POST /api/telegram/state/`
+- Handler: [`api/telegram/state/index.php`](/media/m7md/Programming/projects/LARA/api/telegram/state/index.php)
+- Purpose: Telegram bridge endpoint for storing short-lived chat conversation state.
+- Auth:
+  - Requires the internal Telegram bridge header.
+- Input:
+  - JSON body with `action`, `chat_id`, and optional `state_key`, `context`, or expiration fields.
+- Supported actions:
+  - `get_state`
+  - `set_state`
+  - `clear_state`
+- Behavior:
+  - Stores per-chat Telegram workflow state such as awaiting cancellation reason or delivery name.
+  - Clears expired state automatically when read.
 - Response type: JSON.
 
 ## Non-HTTP Entry Points

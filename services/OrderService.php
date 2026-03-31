@@ -6,8 +6,19 @@ final class OrderService
 {
     public const STATUS_PENDING = 'pending';
     public const STATUS_PREPARING = 'preparing';
-    public const STATUS_RECEIVED = 'received';
+    public const STATUS_DELIVERED = 'delivered';
     public const STATUS_CANCELLED = 'cancelled';
+    private const LEGACY_STATUS_RECEIVED = 'received';
+    private const ORDER_STATUSES = [
+        self::STATUS_PENDING,
+        self::STATUS_PREPARING,
+        self::STATUS_DELIVERED,
+        self::STATUS_CANCELLED,
+    ];
+    private const SERIAL_PREFIX_WIDTH = 2;
+    private const SERIAL_MIN_DIGIT_WIDTH = 4;
+    private const SERIAL_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    private const SERIAL_PREFIX_SPACE = 676;
 
     private OrderRepository $repository;
 
@@ -63,6 +74,10 @@ final class OrderService
             $catalogItem = $catalog[$item['item_id']] ?? null;
             if (!is_array($catalogItem)) {
                 throw new RuntimeException('One or more cart items are no longer available.');
+            }
+
+            if (($catalogItem['is_out_of_stock'] ?? false) === true) {
+                throw new RuntimeException('One or more cart items are currently out of stock.');
             }
 
             $sizeId = $item['size_id'];
@@ -157,6 +172,8 @@ final class OrderService
             $totalAmount += (float) $lineTotal;
         }
 
+        $this->assertItemsStillAvailable($normalizedItems);
+
         return [
             'serial_number' => $serialNumber,
             'serial' => self::formatSerialNumber($serialNumber),
@@ -219,16 +236,37 @@ final class OrderService
         return $order;
     }
 
-    public function listOrders(?string $fromDate, ?string $toDate): array
+    public function listOrders(?string $fromDate, ?string $toDate, ?string $serialSearch = null, ?string $statusFilter = null): array
     {
         $from = $this->normalizeDate($fromDate, 'Start date');
         $to = $this->normalizeDate($toDate, 'End date');
+        $status = self::normalizeStatusFilter($statusFilter);
 
         if ($from !== null && $to !== null && $from > $to) {
             throw new RuntimeException('Start date cannot be after end date.');
         }
 
-        return $this->repository->listOrders($from, $to);
+        return $this->repository->listOrders($from, $to, self::normalizeSerialSearch($serialSearch), $status);
+    }
+
+    public function listOrdersPage(?string $fromDate, ?string $toDate, int $page = 1, int $perPage = 12, ?string $serialSearch = null, ?string $statusFilter = null): array
+    {
+        $from = $this->normalizeDate($fromDate, 'Start date');
+        $to = $this->normalizeDate($toDate, 'End date');
+        $status = self::normalizeStatusFilter($statusFilter);
+
+        if ($from !== null && $to !== null && $from > $to) {
+            throw new RuntimeException('Start date cannot be after end date.');
+        }
+
+        return $this->repository->listOrdersPage(
+            $from,
+            $to,
+            max(1, $page),
+            max(1, min(24, $perPage)),
+            self::normalizeSerialSearch($serialSearch),
+            $status
+        );
     }
 
     public function markPreparing(string $serial): Order
@@ -241,14 +279,19 @@ final class OrderService
         return $this->repository->updateStatus($order->id, self::STATUS_PREPARING);
     }
 
-    public function markReceived(string $serial): Order
+    public function markDelivered(string $serial, string $deliveredBy): Order
     {
         $order = $this->loadOrderForAdmin($serial);
         if ($order->status !== self::STATUS_PREPARING) {
-            throw new RuntimeException('Only preparing orders can be marked as received.');
+            throw new RuntimeException('Only preparing orders can be marked as delivered.');
         }
 
-        return $this->repository->updateStatus($order->id, self::STATUS_RECEIVED);
+        $deliveredBy = trim($deliveredBy);
+        if ($deliveredBy === '') {
+            throw new RuntimeException('Delivery name is required.');
+        }
+
+        return $this->repository->updateStatus($order->id, self::STATUS_DELIVERED, null, $deliveredBy);
     }
 
     public function cancelOrder(string $serial, string $reason): Order
@@ -274,8 +317,8 @@ final class OrderService
         }
 
         $text = implode("\n", [
-            'I ordered an order with serial ' . $order->serial . '.',
-            'How long will it take to be ready?',
+            'انا طلبت الاوردر رقم : ' . $order->serial . '.',
+            'هياخد وقت قد ايه عشان يوصل ؟',
             'Track: ' . $this->buildPublicOrderUrl($order, $baseUrl),
         ]);
 
@@ -291,7 +334,77 @@ final class OrderService
 
     public static function formatSerialNumber(int $serialNumber): string
     {
-        return str_pad((string) max(0, $serialNumber), 6, '0', STR_PAD_LEFT);
+        $normalized = max(0, $serialNumber);
+
+        $digitWidth = self::SERIAL_MIN_DIGIT_WIDTH;
+        $remaining = $normalized;
+        $tierCapacity = self::serialTierCapacity($digitWidth);
+
+        while ($remaining >= $tierCapacity) {
+            $remaining -= $tierCapacity;
+            $digitWidth += 1;
+            $tierCapacity = self::serialTierCapacity($digitWidth);
+        }
+
+        $prefixIndex = $remaining % self::SERIAL_PREFIX_SPACE;
+        $numericValue = intdiv($remaining, self::SERIAL_PREFIX_SPACE) + 1;
+
+        return self::encodeSerialPrefix($prefixIndex)
+            . str_pad((string) $numericValue, $digitWidth, '0', STR_PAD_LEFT);
+    }
+
+    public static function normalizeSerialSearch(?string $serial): string
+    {
+        $normalized = preg_replace('/[^A-Za-z0-9]+/', '', strtoupper(trim((string) $serial))) ?? '';
+
+        return $normalized;
+    }
+
+    public static function normalizeStatusFilter(?string $status): ?string
+    {
+        $normalized = strtolower(trim((string) $status));
+        if ($normalized === '' || $normalized === 'all') {
+            return null;
+        }
+
+        if ($normalized === self::LEGACY_STATUS_RECEIVED) {
+            return self::STATUS_DELIVERED;
+        }
+
+        return in_array($normalized, self::ORDER_STATUSES, true) ? $normalized : null;
+    }
+
+    public static function tryParseSerial(string $serial): ?int
+    {
+        $normalized = self::normalizeSerialSearch($serial);
+        if ($normalized === '') {
+            return null;
+        }
+
+        if (preg_match('/^\d{1,12}$/', $normalized)) {
+            return (int) $normalized;
+        }
+
+        if (!preg_match('/^([A-Z]{2})(\d{4,})$/', $normalized, $matches)) {
+            return null;
+        }
+
+        $prefix = (string) ($matches[1] ?? '');
+        $numericPartRaw = (string) ($matches[2] ?? '');
+        $digitWidth = strlen($numericPartRaw);
+        $numericValue = (int) $numericPartRaw;
+        if ($digitWidth < self::SERIAL_MIN_DIGIT_WIDTH || $numericValue < 1) {
+            return null;
+        }
+
+        $serialNumber = 0;
+        for ($width = self::SERIAL_MIN_DIGIT_WIDTH; $width < $digitWidth; $width += 1) {
+            $serialNumber += self::serialTierCapacity($width);
+        }
+
+        $prefixIndex = self::decodeSerialPrefix($prefix);
+
+        return $serialNumber + (($numericValue - 1) * self::SERIAL_PREFIX_SPACE) + $prefixIndex;
     }
 
     public static function formatMoney(int|float $amount): string
@@ -318,7 +431,7 @@ final class OrderService
         return match ($status) {
             self::STATUS_PENDING => 'Pending',
             self::STATUS_PREPARING => 'Preparing',
-            self::STATUS_RECEIVED => 'Received',
+            self::STATUS_DELIVERED, self::LEGACY_STATUS_RECEIVED => 'Delivered',
             self::STATUS_CANCELLED => 'Cancelled',
             default => ucfirst(str_replace('_', ' ', $status)),
         };
@@ -358,6 +471,56 @@ final class OrderService
         return $value;
     }
 
+    private function assertItemsStillAvailable(array $items): void
+    {
+        $itemIds = [];
+        foreach ($items as $item) {
+            $itemId = (int) ($item['item_id'] ?? 0);
+            if ($itemId > 0) {
+                $itemIds[] = $itemId;
+            }
+        }
+
+        if ($itemIds === []) {
+            return;
+        }
+
+        $catalog = $this->repository->loadCatalogItems($itemIds);
+
+        foreach ($items as $item) {
+            $itemId = (int) ($item['item_id'] ?? 0);
+            if ($itemId <= 0) {
+                continue;
+            }
+
+            $catalogItem = $catalog[$itemId] ?? null;
+            if (!is_array($catalogItem)) {
+                throw new RuntimeException('One or more cart items are no longer available.');
+            }
+
+            if (($catalogItem['is_out_of_stock'] ?? false) === true) {
+                throw new RuntimeException('One or more items in your order are now out of stock.');
+            }
+
+            $sizeId = isset($item['size_id']) && $item['size_id'] !== null
+                ? (int) $item['size_id']
+                : null;
+            $hasSizes = ($catalogItem['sizes'] ?? []) !== [];
+
+            if ($hasSizes && $sizeId === null) {
+                throw new RuntimeException('Please reselect item sizes before ordering.');
+            }
+
+            if (!$hasSizes && $sizeId !== null) {
+                throw new RuntimeException('One or more cart items are no longer available.');
+            }
+
+            if ($hasSizes && !isset($catalogItem['sizes'][$sizeId])) {
+                throw new RuntimeException('One or more selected sizes are no longer available.');
+            }
+        }
+    }
+
     private function composeDisplayName(string $arabic, string $english): string
     {
         $arabic = trim($arabic);
@@ -387,12 +550,42 @@ final class OrderService
 
     private function parseSerial(string $serial): int
     {
-        $serial = trim($serial);
-        if ($serial === '' || !preg_match('/^\d{1,12}$/', $serial)) {
+        $parsed = self::tryParseSerial($serial);
+        if ($parsed === null) {
             throw new RuntimeException('Invalid order serial.');
         }
 
-        return (int) $serial;
+        return $parsed;
+    }
+
+    private static function encodeSerialPrefix(int $prefixIndex): string
+    {
+        $normalized = max(0, min(self::SERIAL_PREFIX_SPACE - 1, $prefixIndex));
+        $first = intdiv($normalized, 26);
+        $second = $normalized % 26;
+
+        return self::SERIAL_ALPHABET[$first] . self::SERIAL_ALPHABET[$second];
+    }
+
+    private static function decodeSerialPrefix(string $prefix): int
+    {
+        $normalized = strtoupper($prefix);
+        if (!preg_match('/^[A-Z]{2}$/', $normalized)) {
+            throw new RuntimeException('Invalid order serial.');
+        }
+
+        $first = strpos(self::SERIAL_ALPHABET, $normalized[0]);
+        $second = strpos(self::SERIAL_ALPHABET, $normalized[1]);
+        if ($first === false || $second === false) {
+            throw new RuntimeException('Invalid order serial.');
+        }
+
+        return ($first * 26) + $second;
+    }
+
+    private static function serialTierCapacity(int $digitWidth): int
+    {
+        return ((10 ** $digitWidth) - 1) * self::SERIAL_PREFIX_SPACE;
     }
 
     private function requirePositiveInt(mixed $value, string $message): int

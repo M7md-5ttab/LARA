@@ -11,17 +11,27 @@ declare(strict_types=1);
  * This blocks sensitive dotfiles like `.env` and supports directory indexes.
  */
 
+require_once __DIR__ . '/bootstrap.php';
+
 $uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 $uriPath = is_string($uriPath) ? $uriPath : '/';
 $uriPath = urldecode($uriPath);
 
-// Block dotfiles and lockfiles
-if (str_starts_with($uriPath, '/.') || str_contains($uriPath, '/.git') || str_ends_with($uriPath, '.lock')) {
+if (str_contains($uriPath, "\0")) {
     http_response_code(404);
     exit;
 }
 
-$fullPath = __DIR__ . $uriPath;
+$segments = array_values(array_filter(explode('/', $uriPath), static fn (string $segment): bool => $segment !== ''));
+foreach ($segments as $segment) {
+    if ($segment === '.' || $segment === '..' || str_starts_with($segment, '.') || str_ends_with($segment, '.lock')) {
+        http_response_code(404);
+        exit;
+    }
+}
+
+$normalizedPath = '/' . implode('/', $segments);
+$fullPath = __DIR__ . ($normalizedPath === '/' ? '' : $normalizedPath);
 
 // If it's a directory, try index.php
 if (is_dir($fullPath)) {
@@ -32,11 +42,15 @@ if (is_dir($fullPath)) {
     }
 }
 
-// If the requested file exists, let the built-in server handle it.
 if (is_file($fullPath)) {
-    return false;
+    $extension = strtolower((string) pathinfo($fullPath, PATHINFO_EXTENSION));
+    if ($extension === 'php') {
+        require $fullPath;
+        exit;
+    }
+
+    HttpCache::sendStaticFile($fullPath, isset($_GET['v']) && (string) $_GET['v'] !== '');
 }
 
 http_response_code(404);
 echo 'Not Found';
-

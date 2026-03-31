@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 final class TelegramNotificationService
 {
-    private const TELEGRAM_TOKEN_OVERRIDE = '8717313831:AAHjMcIbJUKf_ycu1DwNf2MIWrGVQiMc3ig';
-
     private TelegramNotificationRecipientRepository $recipientRepository;
 
     public function __construct(?TelegramNotificationRecipientRepository $recipientRepository = null)
@@ -15,7 +13,7 @@ final class TelegramNotificationService
 
     public function notifyNewOrder(Order $order, string $baseUrl): array
     {
-        $chatIds = $this->recipientRepository->listActiveChatIds();
+        $chatIds = $this->recipientRepository->listNotificationChatIds();
         if ($chatIds === []) {
             return [
                 'ok' => true,
@@ -32,19 +30,18 @@ final class TelegramNotificationService
             ];
         }
 
-        $replyMarkup = $this->buildReplyMarkup($order, $baseUrl);
         $messageHtml = $this->buildNewOrderMessage($order);
         $results = [];
 
         foreach ($chatIds as $chatId) {
             try {
-                $result = $this->telegramApi('sendMessage', [
+                $payload = [
                     'chat_id' => $chatId,
                     'text' => $messageHtml,
                     'parse_mode' => 'HTML',
                     'disable_web_page_preview' => true,
-                    'reply_markup' => $replyMarkup,
-                ]);
+                ];
+                $result = $this->telegramApi('sendMessage', $payload);
 
                 $results[] = [
                     'chat_id' => $chatId,
@@ -69,24 +66,28 @@ final class TelegramNotificationService
 
     private function getTelegramToken(): string
     {
-        $envToken = (string) (Env::get('TELEGRAM_BOT_TOKEN', '') ?: Env::get('TELEGRAM_TOKEN', ''));
-
-        return trim((string) (self::TELEGRAM_TOKEN_OVERRIDE !== '' ? self::TELEGRAM_TOKEN_OVERRIDE : $envToken));
+        return TelegramBotConfig::getBotToken();
     }
 
     private function buildNewOrderMessage(Order $order): string
     {
         $lines = [
-            '<b>New Order Received</b>',
+            '<b>🆕 طلب جديد</b>',
             '',
-            'Serial: <code>#' . $this->escapeHtml($order->serial) . '</code>',
-            'Status: <b>' . $this->escapeHtml(OrderService::statusLabel($order->status)) . '</b>',
-            'Customer: ' . $this->escapeHtml($order->customer_name),
-            'Phone: <code>' . $this->escapeHtml($order->phone_primary) . '</code>',
-            'Total: <b>' . $this->escapeHtml(OrderService::formatMoney($order->total_amount)) . '</b>',
-            'Ordered: ' . $this->escapeHtml(OrderService::formatDateTime($order->ordered_at)),
+            '<b>رقم الطلب:</b> <code>#' . $this->escapeHtml($order->serial) . '</code>',
+            '<b>الحالة:</b> <b>' . $this->escapeHtml($this->statusLabelArabic($order->status)) . '</b>',
+            '<b>وقت الطلب:</b> ' . $this->escapeHtml($this->formatDateTimeArabic($order->ordered_at)),
+            '<b>الإجمالي:</b> <b>' . $this->escapeHtml($this->formatMoneyArabic($order->total_amount)) . '</b>',
             '',
-            '<b>Items</b>',
+            '<b>👤 بيانات العميل</b>',
+            '<b>الاسم:</b> ' . $this->escapeHtml($order->customer_name),
+            '<b>الهاتف 1:</b> <code>' . $this->escapeHtml($order->phone_primary) . '</code>',
+            '<b>الهاتف 2:</b> <code>' . $this->escapeHtml($order->phone_secondary ?? 'غير متوفر') . '</code>',
+            '',
+            '<b>📍 العنوان</b>',
+            $this->escapeHtml(trim($order->address) !== '' ? $order->address : 'غير متوفر'),
+            '',
+            '<b>🧾 الأصناف</b>',
         ];
 
         $items = array_slice($order->items, 0, 8);
@@ -97,56 +98,15 @@ final class TelegramNotificationService
 
             $lines[] = '• '
                 . $this->escapeHtml($item->name)
-                . ' x' . $this->escapeHtml((string) $item->quantity)
-                . ' — ' . $this->escapeHtml(OrderService::formatMoney($item->line_total));
+                . ' × ' . $this->escapeHtml((string) $item->quantity)
+                . ' - ' . $this->escapeHtml($this->formatMoneyArabic($item->line_total));
         }
 
         if (count($order->items) > count($items)) {
-            $lines[] = '• ... and ' . $this->escapeHtml((string) (count($order->items) - count($items))) . ' more item(s)';
+            $lines[] = '• ويوجد ' . $this->escapeHtml((string) (count($order->items) - count($items))) . ' صنف إضافي';
         }
 
-        if (trim($order->address) !== '') {
-            $lines[] = '';
-            $lines[] = '<b>Address</b>';
-            $lines[] = $this->escapeHtml($order->address);
-        }
-
-        return implode("\n", $lines);
-    }
-
-    private function buildReplyMarkup(Order $order, string $baseUrl): ?array
-    {
-        $manageUrl = AppUrl::url('/admin/statistics/orders/view/?serial=' . rawurlencode($order->serial), $baseUrl);
-        if (!$this->isAllowedInlineKeyboardUrl($manageUrl)) {
-            return null;
-        }
-
-        return [
-            'inline_keyboard' => [
-                [
-                    [
-                        'text' => 'Manage order',
-                        'url' => $manageUrl,
-                    ],
-                ],
-            ],
-        ];
-    }
-
-    private function isAllowedInlineKeyboardUrl(string $url): bool
-    {
-        $normalized = trim($url);
-        if ($normalized === '') {
-            return false;
-        }
-
-        $parsed = filter_var($normalized, FILTER_VALIDATE_URL);
-        if ($parsed === false) {
-            return false;
-        }
-
-        $scheme = strtolower((string) parse_url($normalized, PHP_URL_SCHEME));
-        return in_array($scheme, ['http', 'https'], true);
+        return $this->rtl(implode("\n", $lines));
     }
 
     private function telegramApi(string $method, array $payload): array
@@ -244,5 +204,47 @@ final class TelegramNotificationService
     private function escapeHtml(string $value): string
     {
         return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+    }
+
+    private function formatMoneyArabic(int|float $amount): string
+    {
+        return number_format((float) $amount, 2, '.', '') . ' ج.م';
+    }
+
+    private function statusLabelArabic(string $status): string
+    {
+        return match ($status) {
+            OrderService::STATUS_PENDING => 'معلق',
+            OrderService::STATUS_PREPARING => 'قيد التحضير',
+            OrderService::STATUS_DELIVERED => 'تم التسليم',
+            OrderService::STATUS_CANCELLED => 'ملغي',
+            default => 'غير معروف',
+        };
+    }
+
+    private function formatDateTimeArabic(?string $value): string
+    {
+        if ($value === null || trim($value) === '') {
+            return 'غير متوفر';
+        }
+
+        $timestamp = strtotime($value);
+        if ($timestamp === false) {
+            return $value;
+        }
+
+        return str_replace(['AM', 'PM'], ['ص', 'م'], date('Y-m-d h:i A', $timestamp));
+    }
+
+    private function rtl(string $text): string
+    {
+        $lines = preg_split("/\r\n|\r|\n/", $text) ?: [$text];
+        $rtlLines = [];
+
+        foreach ($lines as $line) {
+            $rtlLines[] = "\u{200F}" . $line;
+        }
+
+        return implode("\n", $rtlLines);
     }
 }

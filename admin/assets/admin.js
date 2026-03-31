@@ -10,12 +10,22 @@
   const elPanelTitle = document.getElementById('panel-title');
   const elPanelSub = document.getElementById('panel-sub');
   const elEmptyState = document.getElementById('empty-state');
+  const elEmptyStateText = document.getElementById('empty-state-text');
   const elItemsWrap = document.getElementById('items-wrap');
   const elItemsTbody = document.getElementById('items-tbody');
+  const adminViewButtons = Array.from(document.querySelectorAll('[data-admin-view]'));
+  const adminPanels = Array.from(document.querySelectorAll('[data-admin-panel]'));
+  const ordersEmbedFrame = document.getElementById('orders-embed-frame');
+  const telegramEmbedFrame = document.getElementById('telegram-embed-frame');
+  const ordersEmbedPlaceholder = document.getElementById('orders-embed-placeholder');
+  const telegramEmbedPlaceholder = document.getElementById('telegram-embed-placeholder');
 
+  const btnViewNav = document.getElementById('btn-view-nav');
+  const btnViewEditor = document.getElementById('btn-view-editor');
   const btnRefresh = document.getElementById('btn-refresh');
   const btnAddItem = document.getElementById('btn-add-item');
   const btnEmptyAdd = document.getElementById('btn-empty-add');
+  const btnAddCategory = document.getElementById('btn-add-category');
   const btnEditSubcategory = document.getElementById('btn-edit-subcategory');
   const btnAddSubcategory = document.getElementById('btn-add-subcategory');
 
@@ -24,10 +34,13 @@
   const itemModal = document.getElementById('item-modal');
   const itemForm = document.getElementById('item-form');
   const itemModalTitle = document.getElementById('item-modal-title');
+  const itemModalSub = document.getElementById('item-modal-sub');
   const itemImagePreview = document.getElementById('item-image-preview');
   const itemSaveBtn = document.getElementById('item-save-btn');
   const btnImageRemove = document.getElementById('btn-image-remove');
   const itemHasSizes = document.getElementById('item-has-sizes');
+  const itemOutOfStockInput = document.getElementById('item-out-of-stock');
+  const itemStockToggleBtn = document.getElementById('item-stock-toggle-btn');
   const sizesWrap = document.getElementById('sizes-wrap');
   const sizesList = document.getElementById('sizes-list');
   const btnAddSize = document.getElementById('btn-add-size');
@@ -40,16 +53,23 @@
 
   const catModal = document.getElementById('category-modal');
   const catForm = document.getElementById('category-form');
+  const catModalTitle = document.getElementById('category-modal-title');
+  const catModalSub = document.getElementById('category-modal-sub');
+  const catIdField = document.getElementById('category-id-field');
+  const catSaveBtn = document.getElementById('category-save-btn');
 
   const state = {
     menu: null,
     selected: { categoryId: null, subcategoryId: null },
     itemEditing: { mode: 'create', subcategoryId: null, itemIndex: null },
-    subEditing: { mode: 'create', subcategoryId: null },
-    catEditing: { categoryId: null },
+    subEditing: { mode: 'create', subcategoryId: null, preferredCategoryId: null },
+    catEditing: { mode: 'create', categoryId: null },
+    mobileView: 'editor',
+    activeView: 'menu',
   };
 
   const PLACEHOLDER_IMAGE_URL = 'assets/images/menu-placeholder.svg';
+  const mobileLayoutQuery = window.matchMedia('(max-width: 920px)');
   let itemPreviewObjectUrl = null;
   let modalOpenCount = 0;
   let lockedScrollY = 0;
@@ -222,7 +242,103 @@
     return data.url;
   };
 
+  const validAdminViews = new Set(['menu', 'orders', 'telegram']);
+
+  const getRequestedAdminView = () => {
+    const url = new URL(window.location.href);
+    const view = url.searchParams.get('view') || 'menu';
+    return validAdminViews.has(view) ? view : 'menu';
+  };
+
+  const updateAdminViewHistory = (view, pushState) => {
+    const url = new URL(window.location.href);
+    if (view === 'menu') url.searchParams.delete('view');
+    else url.searchParams.set('view', view);
+
+    const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+    if (pushState) window.history.pushState({ view }, '', nextUrl);
+    else window.history.replaceState({ view }, '', nextUrl);
+  };
+
+  const resizeEmbedFrame = (frame) => {
+    if (!(frame instanceof HTMLIFrameElement)) return;
+
+    try {
+      const doc = frame.contentDocument;
+      if (!doc) return;
+      const bodyHeight = doc.body ? doc.body.scrollHeight : 0;
+      const docHeight = doc.documentElement ? doc.documentElement.scrollHeight : 0;
+      frame.style.height = `${Math.max(760, bodyHeight, docHeight)}px`;
+    } catch (_error) {
+      frame.style.height = '760px';
+    }
+  };
+
+  const ensureEmbedLoaded = (view) => {
+    const frame = view === 'orders' ? ordersEmbedFrame : (view === 'telegram' ? telegramEmbedFrame : null);
+    const placeholder = view === 'orders' ? ordersEmbedPlaceholder : (view === 'telegram' ? telegramEmbedPlaceholder : null);
+    if (!(frame instanceof HTMLIFrameElement)) return;
+
+    if (!frame.dataset.loaded) {
+      frame.src = frame.dataset.src || '';
+      frame.dataset.loaded = '1';
+      if (placeholder) placeholder.hidden = false;
+    } else {
+      resizeEmbedFrame(frame);
+    }
+  };
+
+  const syncAdminView = () => {
+    adminPanels.forEach((panel) => {
+      const panelView = panel.dataset.adminPanel || 'menu';
+      const active = panelView === state.activeView;
+      panel.hidden = !active;
+      panel.classList.toggle('admin-panel-active', active);
+    });
+
+    adminViewButtons.forEach((button) => {
+      const active = (button.dataset.adminView || 'menu') === state.activeView;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+
+    if (state.activeView !== 'menu') {
+      ensureEmbedLoaded(state.activeView);
+    }
+  };
+
+  const switchAdminView = (view, { pushState = true } = {}) => {
+    const nextView = validAdminViews.has(view) ? view : 'menu';
+    if (state.activeView === nextView && pushState) {
+      syncAdminView();
+      return;
+    }
+    state.activeView = nextView;
+    syncAdminView();
+    updateAdminViewHistory(nextView, pushState);
+  };
+
   const findCategory = (menu, categoryId) => (menu?.categories || []).find(c => (c?.id || '') === categoryId) || null;
+
+  const isMobileLayout = () => mobileLayoutQuery.matches;
+
+  const setMobileView = (view) => {
+    state.mobileView = view === 'navigator' ? 'navigator' : 'editor';
+    syncMobileView();
+  };
+
+  const syncMobileView = () => {
+    const resolvedView = isMobileLayout()
+      ? (state.mobileView === 'navigator' ? 'navigator' : 'editor')
+      : 'split';
+
+    document.body.dataset.mobileView = resolvedView;
+
+    btnViewNav?.classList.toggle('active', resolvedView === 'navigator');
+    btnViewNav?.setAttribute('aria-pressed', resolvedView === 'navigator' ? 'true' : 'false');
+    btnViewEditor?.classList.toggle('active', resolvedView === 'editor');
+    btnViewEditor?.setAttribute('aria-pressed', resolvedView === 'editor' ? 'true' : 'false');
+  };
 
   const findSubcategoryLocation = (menu, subcategoryId) => {
     for (const category of (menu?.categories || [])) {
@@ -236,8 +352,21 @@
     const menu = state.menu;
     if (!menu) return;
 
-    const hasCurrent = state.selected.subcategoryId && findSubcategoryLocation(menu, state.selected.subcategoryId).subcategory;
-    if (hasCurrent) return;
+    const selectedCategory = state.selected.categoryId
+      ? findCategory(menu, state.selected.categoryId)
+      : null;
+
+    if (selectedCategory) {
+      const hasCurrentSubcategory = state.selected.subcategoryId
+        && (selectedCategory?.subcategories || []).some(s => (s?.id || '') === state.selected.subcategoryId);
+
+      if (hasCurrentSubcategory) {
+        return;
+      }
+
+      state.selected.subcategoryId = selectedCategory?.subcategories?.[0]?.id || null;
+      return;
+    }
 
     const firstCategory = menu.categories?.[0] || null;
     const firstSub = firstCategory?.subcategories?.[0] || null;
@@ -268,36 +397,56 @@
     const menu = state.menu;
     if (!menu) return;
 
+    if ((menu.categories || []).length === 0) {
+      elSidebar.appendChild(el('div', { class: 'sidebar-empty' },
+        el('strong', {}, 'No main categories yet.'),
+        el('p', {}, 'Create a main category first, then add subcategories and items.'),
+        el('button', {
+          type: 'button',
+          class: 'btn btn-primary',
+          onClick: () => openCategoryModal('create'),
+        }, 'Add Main Category'),
+      ));
+      return;
+    }
+
     for (const category of (menu.categories || [])) {
       const catId = category?.id || '';
       const catLabel = category?.label || catId;
+      const subcategories = category?.subcategories || [];
+      const activeCategory = state.selected.categoryId === catId;
 
       const catSelectBtn = el('button', {
         type: 'button',
-        class: 'cat-header',
+        class: activeCategory ? 'cat-header active' : 'cat-header',
         onClick: () => {
           state.selected.categoryId = catId;
           // keep current subcategory if it belongs to category, else pick first
           const current = state.selected.subcategoryId;
-          const belongs = (category?.subcategories || []).some(s => (s?.id || '') === current);
-          state.selected.subcategoryId = belongs ? current : (category?.subcategories?.[0]?.id || null);
+          const belongs = subcategories.some(s => (s?.id || '') === current);
+          state.selected.subcategoryId = belongs ? current : (subcategories[0]?.id || null);
+          if (isMobileLayout()) setMobileView('navigator');
           renderAll();
         },
-      }, catLabel);
+      },
+      el('div', { class: 'cat-header-copy' },
+        el('span', { class: 'cat-title' }, catLabel),
+        el('span', { class: 'cat-meta' }, subcategories.length === 1 ? '1 subcategory' : `${subcategories.length} subcategories`),
+      ));
 
       const catEditBtn = el('button', {
         type: 'button',
         class: 'icon-btn icon-btn-sm',
         onClick: (ev) => {
           ev.stopPropagation();
-          openCategoryModal(catId);
+          openCategoryModal('edit', catId);
         },
         title: 'Edit category',
         'aria-label': 'Edit category',
       }, '✎');
 
       const list = el('div', { class: 'sub-list' });
-      for (const sub of (category?.subcategories || [])) {
+      for (const sub of subcategories) {
         const subId = sub?.id || '';
         const subLabel = sub?.label || subId;
         const active = state.selected.subcategoryId === subId;
@@ -307,9 +456,24 @@
           onClick: () => {
             state.selected.categoryId = catId;
             state.selected.subcategoryId = subId;
+            if (isMobileLayout()) setMobileView('editor');
             renderAll();
           },
         }, subLabel));
+      }
+
+      if (subcategories.length === 0) {
+        list.appendChild(el('div', { class: 'sub-empty' },
+          el('span', { class: 'sub-empty-text' }, 'No subcategories yet.'),
+          el('button', {
+            type: 'button',
+            class: 'btn btn-small btn-primary',
+            onClick: (ev) => {
+              ev.stopPropagation();
+              openSubcategoryModal('create', null, catId);
+            },
+          }, 'Add First Subcategory'),
+        ));
       }
 
       const headerRow = el('div', { class: 'cat-header-row' }, catSelectBtn, catEditBtn);
@@ -322,26 +486,50 @@
     if (!menu) return;
 
     ensureSelection();
-    const { category, subcategory } = findSubcategoryLocation(menu, state.selected.subcategoryId);
+    const located = findSubcategoryLocation(menu, state.selected.subcategoryId);
+    const category = located.category || findCategory(menu, state.selected.categoryId);
+    const subcategory = located.subcategory;
 
     const catLabel = category?.label || category?.id || '';
     const subLabel = subcategory?.label || subcategory?.id || '';
 
-    elCurrentPath.textContent = category && subcategory ? `${catLabel} / ${subLabel}` : 'Select a subcategory';
-    elPanelTitle.textContent = subcategory ? `${subLabel} Items` : 'Items';
-    elPanelSub.textContent = subcategory ? `Editing ${subcategory.id}` : 'Select a subcategory to edit its items.';
+    elCurrentPath.textContent = category
+      ? (subcategory ? `${catLabel} / ${subLabel}` : `${catLabel} / No subcategory selected`)
+      : 'Select a main category';
+    elPanelTitle.textContent = subcategory
+      ? `${subLabel} Items`
+      : (category ? `${catLabel} Setup` : 'Items');
+    elPanelSub.textContent = subcategory
+      ? `Editing ${subcategory.id}`
+      : (category ? 'Add a subcategory to start editing items.' : 'Create a main category to start building the menu.');
 
     const items = subcategory?.items || [];
+    const emptyMessage = !category
+      ? 'No main categories yet.'
+      : (!subcategory ? 'No subcategory selected for this main category.' : 'No items yet.');
+    const emptyAction = !category
+      ? 'create-category'
+      : (!subcategory ? 'create-subcategory' : 'create-item');
+    const emptyButtonLabel = emptyAction === 'create-category'
+      ? 'Add your first main category'
+      : (emptyAction === 'create-subcategory' ? 'Add the first subcategory' : 'Add the first item');
 
     if (!subcategory || items.length === 0) {
       elItemsWrap.hidden = true;
       elEmptyState.hidden = false;
+      if (elEmptyStateText) elEmptyStateText.textContent = emptyMessage;
+      if (btnEmptyAdd) {
+        btnEmptyAdd.textContent = emptyButtonLabel;
+        btnEmptyAdd.dataset.action = emptyAction;
+      }
       btnAddItem.disabled = !subcategory;
+      btnAddSubcategory.disabled = !category;
       btnEditSubcategory.disabled = !subcategory;
       return;
     }
 
     btnAddItem.disabled = false;
+    btnAddSubcategory.disabled = !category;
     btnEditSubcategory.disabled = false;
     elEmptyState.hidden = true;
     elItemsWrap.hidden = false;
@@ -352,6 +540,7 @@
       const imgSrc = imgUrl || '/assets/images/menu-placeholder.svg';
       const nameAr = item?.name?.ar || '';
       const nameEn = item?.name?.en || '';
+      const isOutOfStock = item?.is_out_of_stock === true;
       const sizes = Array.isArray(item?.sizes) ? item.sizes : [];
       const price = item?.price ?? 0;
 
@@ -392,7 +581,10 @@
       const tr = el('tr', {},
         el('td', {}, img),
         el('td', {}, nameAr),
-        el('td', {}, nameEn),
+        el('td', {}, el('div', { class: 'item-name-cell' },
+          el('span', {}, nameEn),
+          isOutOfStock ? el('span', { class: 'stock-chip stock-chip-out' }, 'Out of stock') : null,
+        )),
         el('td', { class: 't-right' }, priceText),
         el('td', { class: 't-right' }, actions),
       );
@@ -420,6 +612,27 @@
     }
   };
 
+  const syncItemStockState = () => {
+    const isEditMode = state.itemEditing.mode === 'edit';
+    const isOutOfStock = !!itemOutOfStockInput?.checked;
+
+    if (itemStockToggleBtn) {
+      itemStockToggleBtn.hidden = !isEditMode;
+      if (isEditMode) {
+        itemStockToggleBtn.textContent = isOutOfStock ? 'Mark In Stock' : 'Mark Out of Stock';
+        itemStockToggleBtn.className = isOutOfStock ? 'btn btn-primary' : 'btn btn-danger';
+      }
+    }
+
+    if (itemModalSub) {
+      if (isOutOfStock) {
+        itemModalSub.textContent = 'This item is currently marked out of stock.';
+      } else {
+        itemModalSub.textContent = isEditMode ? 'Edit item details.' : 'Create a new menu item.';
+      }
+    }
+  };
+
   const openItemModal = (mode, subcategoryId, itemIndex = null) => {
     state.itemEditing = { mode, subcategoryId, itemIndex };
     itemForm.reset();
@@ -429,6 +642,7 @@
     }
     setItemPreview(PLACEHOLDER_IMAGE_URL);
     setSizesEnabled(false);
+    if (itemOutOfStockInput) itemOutOfStockInput.checked = false;
 
     const { subcategory } = findSubcategoryLocation(state.menu, subcategoryId);
     const subLabel = subcategory?.label || subcategoryId;
@@ -441,6 +655,7 @@
       itemForm.elements.price.value = String(item?.price ?? '');
       itemForm.elements.image_url.value = item?.image_url || '';
       setItemPreview(item?.image_url || PLACEHOLDER_IMAGE_URL);
+      if (itemOutOfStockInput) itemOutOfStockInput.checked = item?.is_out_of_stock === true;
 
       const sizes = Array.isArray(item?.sizes) ? item.sizes : [];
       if (sizes.length > 0) {
@@ -452,11 +667,13 @@
       }
     }
 
+    syncItemStockState();
+
     openModal(itemModal);
   };
 
-  const openSubcategoryModal = (mode, subcategoryId = null) => {
-    state.subEditing = { mode, subcategoryId };
+  const openSubcategoryModal = (mode, subcategoryId = null, preferredCategoryId = null) => {
+    state.subEditing = { mode, subcategoryId, preferredCategoryId };
     subForm.reset();
 
     // Fill category options
@@ -469,8 +686,15 @@
     }
 
     if (mode === 'create') {
+      if (subCategorySelect.options.length === 0) {
+        showToast('Create a main category first.', 'error');
+        openCategoryModal('create');
+        return;
+      }
+
       subIdField.hidden = false;
       subDeleteBtn.hidden = true;
+      subForm.elements.category_id.value = preferredCategoryId || state.selected.categoryId || subCategorySelect.options[0]?.value || '';
       openModal(subModal);
       return;
     }
@@ -491,17 +715,35 @@
     openModal(subModal);
   };
 
-  const openCategoryModal = (categoryId) => {
+  const openCategoryModal = (mode, categoryId = null) => {
+    state.catEditing = { mode, categoryId };
+    catForm.reset();
+
+    if (mode === 'create') {
+      if (catModalTitle) catModalTitle.textContent = 'New Main Category';
+      if (catModalSub) catModalSub.textContent = 'Create a top-level menu group for related subcategories.';
+      if (catIdField) catIdField.hidden = false;
+      catForm.elements.category_id.readOnly = false;
+      catForm.elements.category_id.value = '';
+      catForm.elements.label.value = '';
+      if (catSaveBtn) catSaveBtn.textContent = 'Create';
+      openModal(catModal);
+      return;
+    }
+
     const cat = findCategory(state.menu, categoryId);
     if (!cat) {
       showToast('Category not found', 'error');
       return;
     }
 
-    state.catEditing.categoryId = categoryId;
-    catForm.reset();
+    if (catModalTitle) catModalTitle.textContent = 'Edit Main Category';
+    if (catModalSub) catModalSub.textContent = 'Update the visible label for this main category.';
+    if (catIdField) catIdField.hidden = true;
+    catForm.elements.category_id.readOnly = true;
     catForm.elements.category_id.value = categoryId;
     catForm.elements.label.value = cat.label || cat.id;
+    if (catSaveBtn) catSaveBtn.textContent = 'Save';
 
     openModal(catModal);
   };
@@ -509,12 +751,16 @@
   const renderAll = () => {
     renderSidebar();
     renderItems();
+    syncMobileView();
+    syncAdminView();
   };
 
   const init = async () => {
     try {
       state.menu = await apiGetMenu();
       ensureSelection();
+      state.mobileView = state.selected.subcategoryId ? 'editor' : 'navigator';
+      state.activeView = getRequestedAdminView();
       renderAll();
     } catch (e) {
       showToast(e.message || 'Failed to load menu', 'error');
@@ -522,10 +768,46 @@
   };
 
   // Events
+  adminViewButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      switchAdminView(button.dataset.adminView || 'menu');
+    });
+  });
+
+  [ordersEmbedFrame, telegramEmbedFrame].forEach((frame) => {
+    if (!(frame instanceof HTMLIFrameElement)) return;
+
+    frame.addEventListener('load', () => {
+      const placeholder = frame === ordersEmbedFrame ? ordersEmbedPlaceholder : telegramEmbedPlaceholder;
+      if (placeholder) placeholder.hidden = true;
+
+      resizeEmbedFrame(frame);
+      window.setTimeout(() => resizeEmbedFrame(frame), 120);
+      window.setTimeout(() => resizeEmbedFrame(frame), 500);
+    });
+  });
+
+  window.addEventListener('resize', () => {
+    resizeEmbedFrame(ordersEmbedFrame);
+    resizeEmbedFrame(telegramEmbedFrame);
+  });
+
+  window.addEventListener('popstate', () => {
+    switchAdminView(getRequestedAdminView(), { pushState: false });
+  });
+
+  btnViewNav?.addEventListener('click', () => setMobileView('navigator'));
+  btnViewEditor?.addEventListener('click', () => setMobileView('editor'));
+
+  btnAddCategory?.addEventListener('click', () => {
+    openCategoryModal('create');
+  });
+
   btnRefresh?.addEventListener('click', async () => {
     try {
       state.menu = await apiGetMenu();
       ensureSelection();
+      if (!state.selected.subcategoryId) state.mobileView = 'navigator';
       showToast('Refreshed', 'ok');
       renderAll();
     } catch (e) {
@@ -538,6 +820,21 @@
     openItemModal('create', state.selected.subcategoryId);
   });
   btnEmptyAdd?.addEventListener('click', () => {
+    const action = btnEmptyAdd.dataset.action || 'create-item';
+    if (action === 'create-category') {
+      openCategoryModal('create');
+      return;
+    }
+
+    if (action === 'create-subcategory') {
+      if (!state.selected.categoryId) {
+        openCategoryModal('create');
+        return;
+      }
+      openSubcategoryModal('create', null, state.selected.categoryId);
+      return;
+    }
+
     if (!state.selected.subcategoryId) return;
     openItemModal('create', state.selected.subcategoryId);
   });
@@ -547,7 +844,11 @@
     openSubcategoryModal('edit', state.selected.subcategoryId);
   });
   btnAddSubcategory?.addEventListener('click', () => {
-    openSubcategoryModal('create');
+    if (!(state.menu?.categories || []).length) {
+      openCategoryModal('create');
+      return;
+    }
+    openSubcategoryModal('create', null, state.selected.categoryId || state.menu?.categories?.[0]?.id || null);
   });
 
   // Modal close handlers
@@ -566,6 +867,13 @@
       if (subModal && !subModal.hidden) closeModal(subModal);
       if (catModal && !catModal.hidden) closeModal(catModal);
     }
+  });
+
+  mobileLayoutQuery.addEventListener('change', () => {
+    if (isMobileLayout() && !state.selected.subcategoryId) {
+      state.mobileView = 'navigator';
+    }
+    syncMobileView();
   });
 
   // Live preview for image url
@@ -615,6 +923,12 @@
     sizesList.appendChild(sizeRow());
   });
 
+  itemStockToggleBtn?.addEventListener('click', () => {
+    if (!itemOutOfStockInput) return;
+    itemOutOfStockInput.checked = !itemOutOfStockInput.checked;
+    syncItemStockState();
+  });
+
   itemForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const { mode, subcategoryId, itemIndex } = state.itemEditing;
@@ -627,6 +941,7 @@
       const nameEn = itemForm.elements.name_en.value.trim();
       const price = itemForm.elements.price.value;
       let imageUrl = itemForm.elements.image_url.value.trim();
+      const isOutOfStock = !!itemOutOfStockInput?.checked;
 
       const file = itemForm.elements.image_file.files?.[0] || null;
       if (file) {
@@ -636,7 +951,7 @@
       }
 
       const sizesEnabled = !!itemHasSizes?.checked;
-      const item = { name: { ar: nameAr, en: nameEn }, image_url: imageUrl };
+      const item = { name: { ar: nameAr, en: nameEn }, image_url: imageUrl, is_out_of_stock: isOutOfStock };
       if (sizesEnabled) item.sizes = readSizes();
       else item.price = Number(price);
 
@@ -691,12 +1006,14 @@
         showToast('Subcategory created', 'ok');
         state.selected.categoryId = categoryId;
         state.selected.subcategoryId = newId;
+        if (isMobileLayout()) setMobileView('editor');
       } else {
         state.menu = await apiAction('update_subcategory', {
           subcategory_id: subcategoryId,
           patch: { label, category_id: categoryId },
         });
         showToast('Subcategory updated', 'ok');
+        state.selected.categoryId = categoryId;
       }
 
       closeModal(subModal);
@@ -708,11 +1025,22 @@
 
   catForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const categoryId = catForm.elements.category_id.value;
+    const { mode, categoryId: editingCategoryId } = state.catEditing;
+    const categoryId = catForm.elements.category_id.value.trim();
     const label = catForm.elements.label.value.trim();
     try {
-      state.menu = await apiAction('update_category', { category_id: categoryId, patch: { label } });
-      showToast('Category updated', 'ok');
+      if (mode === 'create') {
+        state.menu = await apiAction('create_category', { category: { id: categoryId, label } });
+        showToast('Category created', 'ok');
+        state.selected.categoryId = categoryId;
+        state.selected.subcategoryId = null;
+        if (isMobileLayout()) setMobileView('navigator');
+      } else {
+        state.menu = await apiAction('update_category', { category_id: editingCategoryId || categoryId, patch: { label } });
+        showToast('Category updated', 'ok');
+        state.selected.categoryId = editingCategoryId || categoryId;
+      }
+
       closeModal(catModal);
       renderAll();
     } catch (err) {
