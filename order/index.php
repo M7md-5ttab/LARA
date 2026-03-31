@@ -24,20 +24,25 @@ try {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Order Status • LARA</title>
+  <title>Order Status • Marvel</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Forum&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= e(HttpCache::versionedAssetUrl('order/order.css')) ?>">
 </head>
 <body class="order-body">
   <div class="order-shell">
     <div class="order-header">
       <a class="order-brand" href="/">
-        <span class="order-brand-badge">L</span>
-        <span>LARA Orders</span>
+        <span class="order-brand-badge">
+          <img src="<?= e(HttpCache::versionedAssetUrl('assets/brand/marvel-logo-mark.png')) ?>" alt="Marvel logo">
+        </span>
+        <span class="order-brand-copy">
+          <strong>Marvel Orders</strong>
+          <small>Patisserie &amp; Cafe</small>
+        </span>
       </a>
-      <a class="order-back" href="/">Back to menu</a>
+      <a class="order-back" href="/">Back to Marvel menu</a>
     </div>
 
     <?php if (is_array($flash) && (($flash['message'] ?? '') !== '')): ?>
@@ -55,7 +60,7 @@ try {
         </div>
         <div class="order-card-body">
           <div class="order-actions">
-            <a class="order-btn order-btn-primary" href="/">Return to menu</a>
+            <a class="order-btn order-btn-primary" href="/">Return to Marvel menu</a>
           </div>
         </div>
       </section>

@@ -31,10 +31,11 @@ header('X-Frame-Options: DENY');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Permissions-Policy: geolocation=(), camera=(), microphone=()');
 HttpCache::applyPrivatePage();
+$formActionSources = implode(' ', order_csp_form_action_sources());
 header(
     "Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; "
-    . "img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://pro.fontawesome.com https://unpkg.com; "
-    . "font-src 'self' data: https:; script-src 'self' https://unpkg.com; connect-src 'self'; form-action 'self'"
+    . "img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://pro.fontawesome.com; "
+    . "font-src 'self' data: https:; script-src 'self'; connect-src 'self'; form-action {$formActionSources}"
 );
 
 if (!function_exists('e')) {
@@ -67,9 +68,77 @@ function order_base_url(): string
     return AppUrl::requestBaseUrl();
 }
 
-function order_redirect(string $path): void
+function order_csp_form_action_sources(): array
 {
-    header('Location: ' . $path, true, 302);
+    $sources = ["'self'" => "'self'"];
+
+    foreach ([AppUrl::requestBaseUrl(), AppUrl::baseUrl()] as $candidate) {
+        $origin = order_csp_origin($candidate);
+        if ($origin !== '') {
+            $sources[$origin] = $origin;
+        }
+    }
+
+    foreach (order_local_alias_origins($_SERVER) as $origin) {
+        $sources[$origin] = $origin;
+    }
+
+    return array_values($sources);
+}
+
+function order_csp_origin(string $url): string
+{
+    $parts = parse_url(trim($url));
+    if (!is_array($parts)) {
+        return '';
+    }
+
+    $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+    $host = trim((string) ($parts['host'] ?? ''));
+    if ($scheme === '' || $host === '') {
+        return '';
+    }
+
+    $origin = $scheme . '://' . $host;
+    if (isset($parts['port']) && is_int($parts['port'])) {
+        $origin .= ':' . $parts['port'];
+    }
+
+    return $origin;
+}
+
+function order_local_alias_origins(array $server): array
+{
+    $hostHeader = trim((string) ($server['HTTP_HOST'] ?? ''));
+    if ($hostHeader === '') {
+        return [];
+    }
+
+    $scheme = ((!empty($server['HTTPS']) && $server['HTTPS'] !== 'off')
+        || (isset($server['SERVER_PORT']) && (string) $server['SERVER_PORT'] === '443'))
+        ? 'https'
+        : 'http';
+
+    $host = preg_replace('/:\d+$/', '', $hostHeader) ?? '';
+    $port = '';
+    if (preg_match('/:(\d{1,5})$/', $hostHeader, $matches) === 1) {
+        $port = ':' . $matches[1];
+    }
+
+    if ($host === 'localhost') {
+        return [$scheme . '://127.0.0.1' . $port];
+    }
+
+    if ($host === '127.0.0.1') {
+        return [$scheme . '://localhost' . $port];
+    }
+
+    return [];
+}
+
+function order_redirect(string $path, int $status = 302): void
+{
+    header('Location: ' . $path, true, $status);
     exit;
 }
 
@@ -96,6 +165,19 @@ function order_get_draft(): ?array
 function order_clear_draft(): void
 {
     unset($_SESSION['order_draft']);
+}
+
+function order_set_completion(array $payload): void
+{
+    $_SESSION['order_completion'] = $payload;
+}
+
+function order_consume_completion(): ?array
+{
+    $completion = $_SESSION['order_completion'] ?? null;
+    unset($_SESSION['order_completion']);
+
+    return is_array($completion) ? $completion : null;
 }
 
 function order_flash(string $type, string $message): void

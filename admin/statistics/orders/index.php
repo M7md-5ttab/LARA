@@ -304,7 +304,7 @@ if ($fetchMode) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Orders Statistics • LARA</title>
+  <title>Orders Statistics • Marvel</title>
   <link rel="stylesheet" href="<?= e(HttpCache::versionedAssetUrl('admin/assets/admin.css')) ?>">
   <script src="<?= e(HttpCache::versionedAssetUrl('admin/assets/orders.js')) ?>" defer></script>
 </head>
@@ -340,9 +340,9 @@ if ($fetchMode) {
     <?php else: ?>
       <header class="orders-topbar">
         <div>
-          <div class="auth-badge">LARA</div>
+          <div class="auth-badge">MARVEL</div>
           <h1>Orders</h1>
-          <p>Browse all submitted orders, filter by date, and inspect the full receipt and customer details.</p>
+          <p>Browse all submitted Marvel orders, filter by date, and inspect the full receipt and customer details.</p>
         </div>
 
         <div class="dash-actions dash-actions-shell">

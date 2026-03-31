@@ -96,23 +96,23 @@ $inactiveCount = count($recipients) - $activeCount;
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Telegram Notifications • LARA</title>
+  <title>Telegram Notifications • Marvel</title>
   <link rel="stylesheet" href="<?= e(HttpCache::versionedAssetUrl('admin/assets/admin.css')) ?>">
 </head>
 <body class="admin-body">
   <div class="orders-shell<?= $embedded ? ' orders-shell-embedded' : '' ?>">
     <?php if ($embedded): ?>
       <header class="embedded-page-head">
-        <div class="auth-badge">LARA</div>
+        <div class="auth-badge">MARVEL</div>
         <h1>Telegram Notifications</h1>
-        <p>Add the chat IDs that should receive bot notifications. Use <code>/chatid</code> in Telegram, then paste the returned value here.</p>
+        <p>Add the chat IDs that should receive Marvel bot notifications. Use <code>/chatid</code> in Telegram, then paste the returned value here.</p>
       </header>
     <?php else: ?>
       <header class="orders-topbar">
         <div>
-          <div class="auth-badge">LARA</div>
+          <div class="auth-badge">MARVEL</div>
           <h1>Telegram Notifications</h1>
-          <p>Add the chat IDs that should receive bot notifications. Use <code>/chatid</code> in Telegram, then paste the returned value here.</p>
+          <p>Add the chat IDs that should receive Marvel bot notifications. Use <code>/chatid</code> in Telegram, then paste the returned value here.</p>
         </div>
 
         <div class="dash-actions dash-actions-shell">

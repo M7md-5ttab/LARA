@@ -56,7 +56,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             error_log('Telegram order notification failed: ' . $notificationException->getMessage());
         }
 
-        order_redirect((string) $result['whatsapp_url']);
+        order_set_completion([
+            'serial' => (string) $result['order']->serial,
+            'status' => (string) $result['order']->status,
+            'order_url' => $service->buildPublicOrderUrl($result['order'], order_base_url()),
+            'whatsapp_url' => (string) $result['whatsapp_url'],
+        ]);
+        order_redirect('/order/complete/', 303);
     } catch (Throwable $exception) {
         $error = $exception->getMessage();
     }
@@ -68,18 +74,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Order Details • LARA</title>
+  <title>Order Details • Marvel</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Forum&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= e(HttpCache::versionedAssetUrl('order/order.css')) ?>">
 </head>
 <body class="order-body">
   <div class="order-shell">
     <div class="order-header">
       <a class="order-brand" href="/">
-        <span class="order-brand-badge">L</span>
-        <span>LARA Orders</span>
+        <span class="order-brand-badge">
+          <img src="<?= e(HttpCache::versionedAssetUrl('assets/brand/marvel-logo-mark.png')) ?>" alt="Marvel logo">
+        </span>
+        <span class="order-brand-copy">
+          <strong>Marvel Orders</strong>
+          <small>Patisserie &amp; Cafe</small>
+        </span>
       </a>
       <a class="order-back" href="/order/review/">Back to receipt</a>
     </div>
@@ -119,7 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="order-detail-grid">
           <div class="order-panel">
-            <form class="order-form" method="post" action="/order/details/">
+            <form class="order-form" method="post" action="">
               <input type="hidden" name="csrf_token" value="<?= e(order_csrf_token()) ?>">
 
               <label class="order-field">

@@ -1,12 +1,12 @@
 :root {
-  --bg: #0b1020;
-  --card: rgba(255, 255, 255, 0.06);
-  --card-2: rgba(255, 255, 255, 0.09);
-  --text: rgba(255, 255, 255, 0.92);
-  --muted: rgba(255, 255, 255, 0.68);
-  --border: rgba(255, 255, 255, 0.12);
-  --shadow: 0 18px 60px rgba(0, 0, 0, 0.5);
-  --brand: #d7b36a;
+  --bg: #081221;
+  --card: rgba(14, 28, 47, 0.88);
+  --card-2: rgba(255, 255, 255, 0.08);
+  --text: rgba(255, 249, 241, 0.94);
+  --muted: rgba(233, 221, 200, 0.68);
+  --border: rgba(233, 221, 200, 0.12);
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.44);
+  --brand: #bc9e56;
   --danger: #ff4d4f;
   --ok: #21c55d;
   --radius: 16px;
@@ -51,8 +51,8 @@ body.modal-open {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(1200px 600px at 20% 10%, rgba(215, 179, 106, 0.18), transparent 55%),
-    radial-gradient(900px 500px at 80% 20%, rgba(98, 179, 255, 0.16), transparent 60%),
+    radial-gradient(1200px 600px at 20% 10%, rgba(188, 158, 86, 0.2), transparent 55%),
+    radial-gradient(900px 500px at 80% 20%, rgba(255, 255, 255, 0.06), transparent 60%),
     radial-gradient(1100px 700px at 40% 90%, rgba(255, 255, 255, 0.05), transparent 55%),
     var(--bg);
 }
@@ -79,13 +79,14 @@ body.modal-open {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 10px;
+  padding: 7px 12px;
   border-radius: 999px;
-  background: rgba(215, 179, 106, 0.14);
-  border: 1px solid rgba(215, 179, 106, 0.26);
+  background: rgba(188, 158, 86, 0.16);
+  border: 1px solid rgba(188, 158, 86, 0.28);
   color: var(--brand);
-  font-weight: 700;
-  letter-spacing: 0.18em;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.24em;
   margin-bottom: 10px;
 }
 
@@ -250,9 +251,9 @@ body.modal-open {
   width: 30px;
   height: 30px;
   border-radius: 999px;
-  background: linear-gradient(180deg, rgba(98, 179, 255, 0.18), rgba(98, 179, 255, 0.1));
-  border: 1px solid rgba(98, 179, 255, 0.24);
-  color: rgba(230, 245, 255, 0.95);
+  background: linear-gradient(180deg, rgba(188, 158, 86, 0.2), rgba(188, 158, 86, 0.1));
+  border: 1px solid rgba(188, 158, 86, 0.24);
+  color: rgba(255, 244, 219, 0.95);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -1315,8 +1316,8 @@ body.modal-open {
 }
 
 .status-badge-preparing {
-  background: rgba(98, 179, 255, 0.14);
-  color: rgba(220, 240, 255, 0.95);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(246, 239, 226, 0.95);
 }
 
 .status-badge-delivered,

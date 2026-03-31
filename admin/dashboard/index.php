@@ -15,7 +15,7 @@ $username = (string) ($_SESSION['admin_username'] ?? 'admin');
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="csrf-token" content="<?= e(admin_csrf_token()) ?>" />
-  <title>Dashboard • LARA</title>
+  <title>Dashboard • Marvel</title>
   <link rel="stylesheet" href="<?= e(HttpCache::versionedAssetUrl('admin/assets/admin.css')) ?>" />
   <script src="<?= e(HttpCache::versionedAssetUrl('admin/assets/admin.js')) ?>" defer></script>
 </head>
@@ -23,10 +23,10 @@ $username = (string) ($_SESSION['admin_username'] ?? 'admin');
   <div class="dash">
     <header class="dash-header">
       <div class="dash-brand">
-        <div class="auth-badge">LARA</div>
+        <div class="auth-badge">MARVEL</div>
         <div class="dash-title">
-          <strong>Admin Dashboard</strong>
-          <span class="dash-sub">Manage menu, categories, items, and orders</span>
+          <strong>Marvel Admin</strong>
+          <span class="dash-sub">Manage Marvel menu, categories, items, and orders</span>
         </div>
       </div>
 

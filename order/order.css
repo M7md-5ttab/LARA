@@ -1,15 +1,19 @@
 :root {
-  --order-bg: #f4efe8;
-  --order-surface: rgba(255, 250, 244, 0.94);
+  --order-bg: #f6efe2;
+  --order-surface: rgba(255, 252, 247, 0.94);
   --order-surface-strong: #fffdf9;
-  --order-text: #2d2217;
-  --order-muted: #766452;
-  --order-border: rgba(70, 49, 20, 0.14);
-  --order-accent: #6f4e37;
-  --order-accent-strong: #553722;
-  --order-danger: #a73b2a;
-  --order-danger-soft: rgba(167, 59, 42, 0.1);
-  --order-shadow: 0 24px 60px rgba(68, 46, 18, 0.14);
+  --order-text: #18202c;
+  --order-muted: #657081;
+  --order-border: rgba(13, 27, 48, 0.1);
+  --order-accent: #0d1b30;
+  --order-accent-strong: #081221;
+  --order-gold: #bc9e56;
+  --order-gold-soft: rgba(188, 158, 86, 0.12);
+  --order-danger: #a43a2b;
+  --order-danger-soft: rgba(164, 58, 43, 0.1);
+  --order-success: #2f7e58;
+  --order-success-soft: rgba(47, 126, 88, 0.1);
+  --order-shadow: 0 28px 62px rgba(13, 27, 48, 0.12);
 }
 
 * {
@@ -21,10 +25,10 @@ body.order-body {
   min-height: 100vh;
   color: var(--order-text);
   background:
-    radial-gradient(circle at top right, rgba(181, 132, 89, 0.18), transparent 28%),
-    radial-gradient(circle at bottom left, rgba(120, 80, 40, 0.12), transparent 36%),
-    linear-gradient(180deg, #f9f3eb 0%, var(--order-bg) 100%);
-  font-family: "DM Sans", system-ui, sans-serif;
+    radial-gradient(circle at top left, rgba(188, 158, 86, 0.18), transparent 22%),
+    radial-gradient(circle at 90% 10%, rgba(13, 27, 48, 0.08), transparent 24%),
+    linear-gradient(180deg, #fffdf8 0%, var(--order-bg) 100%);
+  font-family: "Manrope", system-ui, sans-serif;
 }
 
 a {
@@ -32,7 +36,7 @@ a {
 }
 
 .order-shell {
-  width: min(960px, calc(100% - 32px));
+  width: min(980px, calc(100% - 32px));
   margin: 0 auto;
   padding: 40px 0 72px;
 }
@@ -48,43 +52,69 @@ a {
 .order-brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   text-decoration: none;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .order-brand-badge {
   display: inline-flex;
-  width: 42px;
-  height: 42px;
+  width: 58px;
+  height: 58px;
+  padding: 6px;
   align-items: center;
   justify-content: center;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(13, 27, 48, 0.08), rgba(13, 27, 48, 0.03));
+  border: 1px solid rgba(13, 27, 48, 0.08);
+  box-shadow: 0 14px 28px rgba(13, 27, 48, 0.1);
+}
+
+.order-brand-badge img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   border-radius: 14px;
-  background: var(--order-accent);
-  color: #fff7ef;
+}
+
+.order-brand-copy {
+  display: grid;
+  gap: 3px;
+}
+
+.order-brand-copy strong {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 2rem;
+  line-height: 0.9;
+  letter-spacing: 0.03em;
+}
+
+.order-brand-copy small {
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--order-muted);
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .order-back {
   text-decoration: none;
   color: var(--order-muted);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .order-card {
   background: var(--order-surface);
   border: 1px solid var(--order-border);
-  border-radius: 28px;
+  border-radius: 30px;
   box-shadow: var(--order-shadow);
   overflow: hidden;
 }
 
 .order-card-head {
-  padding: 28px 28px 18px;
+  padding: 30px 30px 20px;
   border-bottom: 1px solid var(--order-border);
   background:
-    linear-gradient(135deg, rgba(111, 78, 55, 0.1), transparent 68%),
+    linear-gradient(135deg, rgba(188, 158, 86, 0.14), transparent 68%),
     var(--order-surface-strong);
 }
 
@@ -94,21 +124,21 @@ a {
   gap: 8px;
   padding: 7px 12px;
   border-radius: 999px;
-  background: rgba(111, 78, 55, 0.1);
-  color: var(--order-accent);
+  background: var(--order-gold-soft);
+  color: var(--order-gold);
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-weight: 800;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
 .order-card-head h1,
 .order-card-head h2 {
   margin: 14px 0 8px;
-  font-family: "Forum", Georgia, serif;
-  font-size: clamp(32px, 5vw, 46px);
-  font-weight: 400;
-  line-height: 1.05;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: clamp(34px, 5vw, 52px);
+  font-weight: 600;
+  line-height: 0.96;
 }
 
 .order-card-head p {
@@ -119,7 +149,7 @@ a {
 }
 
 .order-card-body {
-  padding: 24px 28px 28px;
+  padding: 24px 30px 30px;
 }
 
 .order-meta-grid {
@@ -132,8 +162,8 @@ a {
 .order-meta {
   padding: 16px 18px;
   border: 1px solid var(--order-border);
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .order-meta-label {
@@ -141,8 +171,8 @@ a {
   margin-bottom: 6px;
   color: var(--order-muted);
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-weight: 800;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
@@ -159,29 +189,29 @@ a {
   padding: 8px 14px;
   border-radius: 999px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .order-status-pending {
-  background: rgba(181, 136, 44, 0.12);
-  color: #8a6417;
+  background: rgba(188, 158, 86, 0.14);
+  color: #7b6430;
 }
 
 .order-status-preparing {
-  background: rgba(67, 120, 214, 0.12);
-  color: #355ca6;
+  background: rgba(13, 27, 48, 0.1);
+  color: var(--order-accent);
 }
 
 .order-status-delivered,
 .order-status-received {
-  background: rgba(50, 142, 86, 0.12);
-  color: #25693f;
+  background: rgba(47, 126, 88, 0.12);
+  color: var(--order-success);
 }
 
 .order-status-cancelled {
-  background: rgba(167, 59, 42, 0.12);
+  background: rgba(164, 58, 43, 0.12);
   color: var(--order-danger);
 }
 
@@ -200,8 +230,8 @@ a {
 .order-table th {
   color: var(--order-muted);
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-weight: 800;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
@@ -213,7 +243,7 @@ a {
 .order-table tfoot td {
   border-bottom: 0;
   padding-top: 18px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .order-actions {
@@ -226,10 +256,10 @@ a {
 .order-btn {
   appearance: none;
   border: 0;
-  border-radius: 16px;
+  border-radius: 18px;
   padding: 14px 18px;
   font: inherit;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
   text-decoration: none;
   transition: transform 0.08s ease, opacity 0.2s ease, background 0.2s ease;
@@ -240,16 +270,16 @@ a {
 }
 
 .order-btn-primary {
-  background: var(--order-accent);
-  color: #fff8f2;
+  background: linear-gradient(135deg, var(--order-accent), var(--order-accent-strong));
+  color: #fffaf2;
 }
 
 .order-btn-primary:hover {
-  background: var(--order-accent-strong);
+  opacity: 0.94;
 }
 
 .order-btn-ghost {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.76);
   border: 1px solid var(--order-border);
   color: var(--order-text);
 }
@@ -266,7 +296,7 @@ a {
 
 .order-field-label {
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--order-muted);
 }
 
@@ -274,7 +304,7 @@ a {
 .order-field-textarea {
   width: 100%;
   border: 1px solid var(--order-border);
-  border-radius: 16px;
+  border-radius: 18px;
   background: rgba(255, 255, 255, 0.84);
   color: var(--order-text);
   padding: 14px 15px;
@@ -284,8 +314,8 @@ a {
 
 .order-field-input:focus,
 .order-field-textarea:focus {
-  border-color: rgba(111, 78, 55, 0.35);
-  box-shadow: 0 0 0 4px rgba(111, 78, 55, 0.08);
+  border-color: rgba(188, 158, 86, 0.4);
+  box-shadow: 0 0 0 4px rgba(188, 158, 86, 0.1);
 }
 
 .order-field-textarea {
@@ -302,14 +332,14 @@ a {
 .order-summary {
   margin-top: 10px;
   padding: 18px 20px;
-  border-radius: 18px;
-  background: rgba(111, 78, 55, 0.06);
-  border: 1px solid rgba(111, 78, 55, 0.08);
+  border-radius: 20px;
+  background: rgba(13, 27, 48, 0.04);
+  border: 1px solid rgba(13, 27, 48, 0.08);
 }
 
 .order-summary-title {
   margin: 0 0 12px;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .order-summary-line {
@@ -336,13 +366,13 @@ a {
 .order-alert-error {
   background: var(--order-danger-soft);
   color: var(--order-danger);
-  border-color: rgba(167, 59, 42, 0.22);
+  border-color: rgba(164, 58, 43, 0.18);
 }
 
 .order-alert-success {
-  background: rgba(50, 142, 86, 0.08);
-  color: #25693f;
-  border-color: rgba(50, 142, 86, 0.18);
+  background: var(--order-success-soft);
+  color: var(--order-success);
+  border-color: rgba(47, 126, 88, 0.16);
 }
 
 .order-detail-grid {
@@ -354,8 +384,8 @@ a {
 
 .order-panel {
   border: 1px solid var(--order-border);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.66);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.7);
   padding: 20px;
 }
 

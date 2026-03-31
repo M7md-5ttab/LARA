@@ -100,6 +100,33 @@ final class HttpCache
 
     private static function detectMimeType(string $filePath): string
     {
+        $extension = strtolower((string) pathinfo($filePath, PATHINFO_EXTENSION));
+        $knownMimeTypes = [
+            'css' => 'text/css; charset=UTF-8',
+            'js' => 'text/javascript; charset=UTF-8',
+            'mjs' => 'text/javascript; charset=UTF-8',
+            'json' => 'application/json; charset=UTF-8',
+            'svg' => 'image/svg+xml',
+            'png' => 'image/png',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            'avif' => 'image/avif',
+            'ico' => 'image/x-icon',
+            'woff' => 'font/woff',
+            'woff2' => 'font/woff2',
+            'ttf' => 'font/ttf',
+            'otf' => 'font/otf',
+            'eot' => 'application/vnd.ms-fontobject',
+            'pdf' => 'application/pdf',
+            'txt' => 'text/plain; charset=UTF-8',
+        ];
+
+        if (isset($knownMimeTypes[$extension])) {
+            return $knownMimeTypes[$extension];
+        }
+
         if (function_exists('mime_content_type')) {
             $mimeType = mime_content_type($filePath);
             if (is_string($mimeType) && $mimeType !== '') {

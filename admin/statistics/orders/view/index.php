@@ -101,16 +101,16 @@ $baseUrl = admin_order_view_base_url();
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Manage Order • LARA</title>
+  <title>Manage Order • Marvel</title>
   <link rel="stylesheet" href="<?= e(HttpCache::versionedAssetUrl('admin/assets/admin.css')) ?>">
 </head>
 <body class="admin-body">
   <div class="orders-shell<?= $embedded ? ' orders-shell-embedded' : '' ?>">
     <?php if ($embedded): ?>
       <header class="embedded-page-head">
-        <div class="auth-badge">LARA</div>
+        <div class="auth-badge">MARVEL</div>
         <h1>Order Management</h1>
-        <p>Review the receipt, customer details, and move the order through its workflow.</p>
+        <p>Review the Marvel receipt, customer details, and move the order through its workflow.</p>
         <div class="embedded-page-actions">
           <a class="btn btn-ghost" href="<?= e($ordersListUrl()) ?>">Back to orders</a>
         </div>
@@ -118,9 +118,9 @@ $baseUrl = admin_order_view_base_url();
     <?php else: ?>
       <header class="orders-topbar">
         <div>
-          <div class="auth-badge">LARA</div>
+          <div class="auth-badge">MARVEL</div>
           <h1>Order Management</h1>
-          <p>Review the receipt, customer details, and move the order through its workflow.</p>
+          <p>Review the Marvel receipt, customer details, and move the order through its workflow.</p>
         </div>
 
         <div class="dash-actions dash-actions-shell">
