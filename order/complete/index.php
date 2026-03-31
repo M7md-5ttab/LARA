@@ -50,7 +50,7 @@ $statusClass = match ($status) {
     <div class="order-header">
       <a class="order-brand" href="/">
         <span class="order-brand-badge">
-          <img src="<?= e(HttpCache::versionedAssetUrl('assets/brand/marvel-logo-mark.png')) ?>" alt="Marvel logo">
+          <img src="<?= e(HttpCache::versionedAssetUrl('assets/brand/custom-logo.jpg')) ?>" alt="Marvel logo">
         </span>
         <span class="order-brand-copy">
           <strong>Marvel Orders</strong>

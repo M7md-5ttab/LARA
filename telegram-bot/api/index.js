@@ -4,7 +4,7 @@ const crypto = require('node:crypto');
 
 const BUILD_VERSION = '2026-03-30-arabic-order-workflow-v1';
 const TELEGRAM_TOKEN_OVERRIDE = '8717313831:AAHjMcIbJUKf_ycu1DwNf2MIWrGVQiMc3ig';
-const LARA_APP_URL_OVERRIDE = 'https://zanier-semilegislative-makeda.ngrok-free.dev';
+const LARA_APP_URL_OVERRIDE = 'https://marvelitayalbaroud.rf.gd';
 const RTL = '\u200F';
 const EMPTY_INLINE_KEYBOARD = { inline_keyboard: [] };
 const STATE_CANCEL_REASON = 'awaiting_cancel_reason';
@@ -275,7 +275,8 @@ function buildBridgeConfigErrorMessage() {
   return rtlText([
     '<b>⚠️ خطأ في الإعداد</b>',
     '',
-    'رابط التطبيق أو إعداد الربط الداخلي للبوت غير مكتمل.',
+    'رابط التطبيق أو إعداد الربط الداخلي للبوت غير صالح.',
+    'تأكد أن رابط الـ API يعيد JSON مباشرة وليس صفحة HTML أو صفحة حماية JavaScript من الاستضافة.',
   ]);
 }
 
@@ -919,6 +920,7 @@ async function getJson(url, { method = 'GET', payload, headers = {} } = {}) {
     method,
     headers: {
       'Content-Type': 'application/json',
+      Accept: 'application/json, text/plain;q=0.9, */*;q=0.8',
       ...headers,
     },
   };
@@ -929,6 +931,7 @@ async function getJson(url, { method = 'GET', payload, headers = {} } = {}) {
 
   const response = await fetch(url, options);
   const text = await response.text();
+  const contentType = String(response.headers.get('content-type') || '').toLowerCase();
 
   let data = null;
   try {
@@ -937,11 +940,24 @@ async function getJson(url, { method = 'GET', payload, headers = {} } = {}) {
     data = null;
   }
 
+  if (contentType.includes('text/html') && /__test=|\/aes\.js|This site requires Javascript to work/i.test(text)) {
+    const error = new Error('The configured app URL is behind a JavaScript browser challenge and is not usable as a JSON API endpoint.');
+    error.httpStatus = response.status;
+    error.responseData = data;
+    error.responseText = text;
+    error.isBridgeConfigError = true;
+    throw error;
+  }
+
   if (!response.ok || !data || data.ok !== true) {
-    const description = data && data.error ? data.error : `Request failed with HTTP ${response.status}`;
+    const textSnippet = String(text || '').replace(/\s+/g, ' ').trim().slice(0, 240);
+    const description = data && data.error
+      ? data.error
+      : (textSnippet ? `Expected JSON response but received: ${textSnippet}` : `Request failed with HTTP ${response.status}`);
     const error = new Error(description);
     error.httpStatus = response.status;
     error.responseData = data;
+    error.responseText = text;
     throw error;
   }
 
@@ -1069,7 +1085,9 @@ function isUnauthorizedError(error) {
 
 function isBridgeConfigError(error) {
   const message = error instanceof Error ? error.message : String(error);
-  return message.includes('bridge') || message.includes('App URL is not configured');
+  return Boolean(error && error.isBridgeConfigError)
+    || message.includes('bridge')
+    || message.includes('App URL is not configured');
 }
 
 function isCommandAllowed(permissions, command) {
@@ -1125,20 +1143,9 @@ async function handleCheckCommand(chatId, replyToMessageId, permissions) {
     return;
   }
 
-  const checkUrl = buildAppUrl('/api/telegram/check/');
-  if (!checkUrl) {
-    await sendHtmlMessage(chatId, buildBridgeConfigErrorMessage(), {
-      reply_to_message_id: replyToMessageId,
-    });
-    return;
-  }
-
   try {
-    const data = await getJson(checkUrl, {
-      method: 'POST',
-      payload: {
-        chat_id: String(chatId),
-      },
+    const data = await callBridge('/api/telegram/check/', {
+      chat_id: String(chatId),
     });
 
     const extra = {
@@ -1152,9 +1159,13 @@ async function handleCheckCommand(chatId, replyToMessageId, permissions) {
 
     await sendHtmlMessage(chatId, buildCheckMessage(data), extra);
   } catch (error) {
+    const fallback = isBridgeConfigError(error)
+      ? buildBridgeConfigErrorMessage()
+      : buildCommandErrorMessage('تعذر جلب الملخص', error instanceof Error ? error.message : 'تعذر تحميل ملخص الطلبات الآن.');
+
     await sendHtmlMessage(
       chatId,
-      buildCommandErrorMessage('تعذر جلب الملخص', error instanceof Error ? error.message : 'تعذر تحميل ملخص الطلبات الآن.'),
+      fallback,
       {
         reply_to_message_id: replyToMessageId,
       }

@@ -21,7 +21,7 @@ $subcategoriesById = $menu->subcategoriesById();
 
   <link rel="stylesheet" href="<?= e(HttpCache::versionedAssetUrl('main.css')) ?>">
   <link rel="stylesheet" href="<?= e(HttpCache::versionedAssetUrl('style.css')) ?>">
-  <link rel="shortcut icon" href="<?= e(HttpCache::versionedAssetUrl('assets/brand/marvel-logo-mark-transparent.png')) ?>" type="image/png">
+  <link rel="shortcut icon" href="<?= e(HttpCache::versionedAssetUrl('assets/brand/custom-logo.jpg')) ?>" type="image/jpeg">
   <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css">
   <link rel="stylesheet" href="<?= e(HttpCache::versionedAssetUrl('assets/vendor/lenis/lenis.css')) ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,7 +36,7 @@ $subcategoriesById = $menu->subcategoriesById();
   >
     <nav aria-label="Primary">
       <a class="logo" href="#top" aria-label="Marvel Patisserie home">
-        <img src="<?= e(HttpCache::versionedAssetUrl('assets/brand/marvel-logo-mark-transparent.png')) ?>" alt="Marvel Patisserie logo">
+        <img src="<?= e(HttpCache::versionedAssetUrl('assets/brand/custom-logo.jpg')) ?>" alt="Marvel Patisserie logo">
         <span class="logo-copy">
           <strong>Marvel</strong>
           <span>Patisserie &amp; Cafe</span>
@@ -44,7 +44,6 @@ $subcategoriesById = $menu->subcategoriesById();
       </a>
 
       <ul>
-        <li><a href="#story">Story</a></li>
         <li><a href="#menu">Menu</a></li>
         <li><a href="#contact">Contact</a></li>
         <li class="cart-nav">
@@ -53,9 +52,9 @@ $subcategoriesById = $menu->subcategoriesById();
             <span>Cart</span>
             <span class="cart-count" aria-live="polite">0</span>
           </button>
-          <div class="cart-dropdown" id="cart-panel" role="dialog" aria-label="Shopping Cart">
+          <div class="cart-dropdown" id="cart-panel" role="dialog" aria-label="Shopping Cart" data-lenis-prevent data-lenis-prevent-wheel data-lenis-prevent-touch>
             <h4>Marvel Cart</h4>
-            <ul class="cart-list"></ul>
+            <ul class="cart-list" data-lenis-prevent data-lenis-prevent-wheel data-lenis-prevent-touch></ul>
             <p class="cart-empty">Cart is empty</p>
             <div class="cart-total">Total: LE 0.00</div>
             <div class="cart-actions">
@@ -79,7 +78,7 @@ $subcategoriesById = $menu->subcategoriesById();
       </div>
 
       <aside class="hero-brand-card animate-on-scroll" aria-label="Marvel signature selection">
-        <img src="<?= e(HttpCache::versionedAssetUrl('assets/brand/marvel-logo-full-transparent.png')) ?>" alt="Marvel Patisserie brand card">
+        <img style="border-radius:12px" src="<?= e(HttpCache::versionedAssetUrl('assets/brand/marvel-logo-full.jpg')) ?>" alt="Marvel Patisserie brand card">
         <div class="hero-brand-copy">
           <span class="hero-brand-label">Signature Selection</span>
           <strong>Marvel</strong>
@@ -95,8 +94,6 @@ $subcategoriesById = $menu->subcategoriesById();
     </div>
     <div class="brand-overview-copy">
       <span class="section-eyebrow">The Space</span>
-      <h2>A refined patisserie experience from first glance to final order.</h2>
-      <p>Deep navy tones, warm gold accents, and cleaner spacing keep the focus on desserts, coffee, and a smoother ordering journey.</p>
       <div class="brand-overview-tags">
         <span>Signature desserts</span>
         <span>Artisan coffee</span>
@@ -116,12 +113,12 @@ $subcategoriesById = $menu->subcategoriesById();
           <div class="service-card">
             <div class="has-before hover:shine">
               <figure class="card-banner img-holder" style="--width: 285; --height: 336;">
-                <img src="<?= e(HttpCache::versionedAssetUrl('assets/brand/marvel-french-toast.jpg')) ?>" width="285" height="336" loading="lazy" alt="Dessert plate" class="img-cover">
+                <img src="<?= e(HttpCache::versionedAssetUrl('assets/brand/custom-highlight-1.jpg')) ?>" width="285" height="336" loading="lazy" alt="Fresh baked pastry" class="img-cover">
               </figure>
             </div>
 
             <div class="card-content">
-              <h3 class="title-4 card-title"><a href="#menu">Dessert Plates</a></h3>
+              <h3 class="title-4 card-title"><a href="#menu">Fresh Bakes</a></h3>
               <a href="#menu" class="btn-text hover-underline label-2">Discover</a>
             </div>
           </div>
@@ -131,7 +128,7 @@ $subcategoriesById = $menu->subcategoriesById();
           <div class="service-card">
             <div class="has-before hover:shine">
               <figure class="card-banner img-holder" style="--width: 285; --height: 336;">
-                <img src="<?= e(HttpCache::versionedAssetUrl('assets/brand/marvel-signature-cake.jpg')) ?>" width="285" height="336" loading="lazy" alt="Signature cake" class="img-cover">
+                <img src="<?= e(HttpCache::versionedAssetUrl('assets/brand/custom-highlight-2.jpg')) ?>" width="285" height="336" loading="lazy" alt="Signature cake" class="img-cover">
               </figure>
             </div>
 
@@ -146,12 +143,12 @@ $subcategoriesById = $menu->subcategoriesById();
           <div class="service-card">
             <div class="has-before hover:shine">
               <figure class="card-banner img-holder" style="--width: 285; --height: 336;">
-                <img src="<?= e(HttpCache::versionedAssetUrl('assets/brand/marvel-coffee.jpg')) ?>" width="285" height="336" loading="lazy" alt="Coffee selection" class="img-cover">
+                <img src="<?= e(HttpCache::versionedAssetUrl('assets/brand/custom-highlight-3.jpg')) ?>" width="285" height="336" loading="lazy" alt="Dessert platter" class="img-cover">
               </figure>
             </div>
 
             <div class="card-content">
-              <h3 class="title-4 card-title"><a href="#menu">Coffee Rituals</a></h3>
+              <h3 class="title-4 card-title"><a href="#menu">Dessert Platters</a></h3>
               <a href="#menu" class="btn-text hover-underline label-2">Discover</a>
             </div>
           </div>
@@ -245,17 +242,26 @@ $subcategoriesById = $menu->subcategoriesById();
 
   <footer id="contact" class="site-footer animate-on-scroll">
     <div class="footer-content">
-      <img class="footer-logo" src="<?= e(HttpCache::versionedAssetUrl('assets/brand/marvel-logo-full-transparent.png')) ?>" alt="Marvel Patisserie logo">
+      <img class="footer-logo" src="<?= e(HttpCache::versionedAssetUrl('assets/brand/custom-logo.jpg')) ?>" alt="Marvel Patisserie logo">
       <h2 class="logo">Marvel Patisserie &amp; Cafe</h2>
       <p class="footer-location">Itay Elbaroud</p>
       <p class="footer-note">Follow Marvel and stay close to the latest desserts, cakes, and coffee.</p>
 
-      <div class="social-links">
-        <a href="https://api.whatsapp.com/send/?phone=%2B201508803316&text&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="WhatsApp">
+      <div class="social-links" aria-label="Contact methods">
+        <a href="https://wa.me/201005191510" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="WhatsApp" title="WhatsApp">
           <i class="fab fa-whatsapp"></i>
         </a>
-        <a href="https://www.facebook.com/MarvelItay?mibextid=ZbWKwL" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Facebook">
+        <a href="tel:0453436688" class="social-btn" aria-label="Landline" title="0453436688">
+          <i class="fas fa-phone-alt"></i>
+        </a>
+        <a href="https://www.facebook.com/MarvelItay?mibextid=ZbWKwL" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Facebook" title="Facebook">
           <i class="fab fa-facebook-f"></i>
+        </a>
+        <a href="https://www.instagram.com/marvelitay?igsh=MTJsZXI5cnJmam16aw==" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Instagram" title="Instagram">
+          <i class="fab fa-instagram"></i>
+        </a>
+        <a href="https://vm.tiktok.com/ZS98BEQDLxwus-23nuI/" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="TikTok" title="TikTok">
+          <img src="<?= e(HttpCache::versionedAssetUrl('assets/images/tiktok.svg')) ?>" width="22" height="22" alt="" aria-hidden="true">
         </a>
       </div>
 

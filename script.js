@@ -345,14 +345,20 @@ document.addEventListener('DOMContentLoaded', () => {
       thumb.src = menuImageFallbackSrc;
     }, { once: true });
 
+    const body = document.createElement('div');
+    body.className = 'cart-item-body';
+
     const name = document.createElement('span');
     name.className = 'cart-item-name';
-    name.title = 'View details';
+    name.title = item.name;
     name.textContent = item.name;
-    name.addEventListener('click', e => {
-      e.stopPropagation();
-      alert(`Order Details:\n\n${item.name}\nUnit: ${formatMoney(item.price)}\nQty: ${item.qty}\nTotal: ${formatMoney(item.price * item.qty)}`);
-    });
+
+    const meta = document.createElement('span');
+    meta.className = 'cart-item-meta';
+    meta.textContent = `Unit ${formatMoney(item.price)}`;
+
+    const summary = document.createElement('div');
+    summary.className = 'cart-item-summary';
 
     const controls = document.createElement('div');
     controls.className = 'cart-item-controls';
@@ -392,10 +398,14 @@ document.addEventListener('DOMContentLoaded', () => {
     price.className = 'cart-item-price';
     price.textContent = formatMoney(item.price * item.qty);
 
+    summary.appendChild(controls);
+    summary.appendChild(price);
+    body.appendChild(name);
+    body.appendChild(meta);
+    body.appendChild(summary);
+
     li.appendChild(thumb);
-    li.appendChild(name);
-    li.appendChild(controls);
-    li.appendChild(price);
+    li.appendChild(body);
 
     li.addEventListener('click', e => e.stopPropagation());
 
@@ -403,6 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const updateCart = () => {
+    cartDropdown.classList.toggle('has-items', cart.length > 0);
     cartList.innerHTML = '';
     if (!cart.length) {
       cartEmpty.style.display = 'block';
@@ -425,12 +436,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const openCart = () => {
     cartDropdown.classList.add('open');
     cartToggle.setAttribute('aria-expanded', 'true');
+    cartList.scrollTop = 0;
   };
 
   cartToggle.addEventListener('click', e => {
     e.stopPropagation();
-    cartDropdown.classList.toggle('open');
-    cartToggle.setAttribute('aria-expanded', cartDropdown.classList.contains('open'));
+    if (cartDropdown.classList.contains('open')) closeCart();
+    else openCart();
   });
 
   document.addEventListener('click', e => {
@@ -488,12 +500,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* Toast Notifications */
   const showToast = msg => {
+    document.querySelectorAll('.toast').forEach(toastEl => toastEl.remove());
+
     const toast = document.createElement('div');
     toast.className = 'toast';
+    toast.setAttribute('role', 'status');
     toast.textContent = msg;
     document.body.appendChild(toast);
     requestAnimationFrame(() => toast.classList.add('show'));
-    setTimeout(() => {
+    window.setTimeout(() => {
       toast.classList.remove('show');
       toast.addEventListener('transitionend', () => toast.remove(), { once: true });
     }, 2000);
