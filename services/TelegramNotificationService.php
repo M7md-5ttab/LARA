@@ -41,6 +41,10 @@ final class TelegramNotificationService
                     'parse_mode' => 'HTML',
                     'disable_web_page_preview' => true,
                 ];
+                $replyMarkup = $this->buildOrderReplyMarkup($order);
+                if ($replyMarkup !== null) {
+                    $payload['reply_markup'] = $replyMarkup;
+                }
                 $result = $this->telegramApi('sendMessage', $payload);
 
                 $results[] = [
@@ -107,6 +111,38 @@ final class TelegramNotificationService
         }
 
         return $this->rtl(implode("\n", $lines));
+    }
+
+    private function buildOrderReplyMarkup(Order $order): ?array
+    {
+        $serial = trim((string) $order->serial);
+        if ($serial === '') {
+            return null;
+        }
+
+        if ($order->status === OrderService::STATUS_PENDING) {
+            return [
+                'inline_keyboard' => [
+                    [
+                        ['text' => '🧑‍🍳 تجهيز الطلب', 'callback_data' => 'p1:' . $serial],
+                        ['text' => '❌ إلغاء الطلب', 'callback_data' => 'c1:' . $serial],
+                    ],
+                ],
+            ];
+        }
+
+        if ($order->status === OrderService::STATUS_PREPARING) {
+            return [
+                'inline_keyboard' => [
+                    [
+                        ['text' => '✅ تم التسليم', 'callback_data' => 'd1:' . $serial],
+                        ['text' => '❌ إلغاء الطلب', 'callback_data' => 'c1:' . $serial],
+                    ],
+                ],
+            ];
+        }
+
+        return null;
     }
 
     private function telegramApi(string $method, array $payload): array

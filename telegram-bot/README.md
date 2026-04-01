@@ -205,6 +205,7 @@ LARA_APP_URL=https://your-php-app.example.com
 ```
 
 You may use `APP_URL` instead of `LARA_APP_URL`, but `LARA_APP_URL` is clearer for this bot deployment.
+Paste both values as raw text in Vercel. Do not wrap them in `'quotes'` or `"quotes"`.
 
 ### Optional
 
@@ -489,6 +490,8 @@ Check:
 - the chat ID was added in `/admin/settings/telegram/`
 - the recipient is active
 - the correct permission checkbox is enabled
+- `GET /api` on the bot shows the same `configured.app_base_url` as the PHP app where you saved the chat ID
+- the bot is not pointing at a different deployment or database than the admin dashboard you used
 
 ### New order notifications do not arrive
 
