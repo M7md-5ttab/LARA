@@ -1380,9 +1380,7 @@ async function handlePrepareRequestCallback(callbackQuery, parsed) {
     return;
   }
 
-  await answerCallbackQuery(callbackQuery.id, 'تجهيز الطلب يعني أن الطلب دخل مرحلة التحضير.', {
-    show_alert: true,
-  });
+  await answerCallbackQuery(callbackQuery.id);
 
   await sendHtmlMessage(chatId, buildPrepareConfirmMessage(parsed.serial), {
     reply_to_message_id: sourceMessageId,
@@ -1398,7 +1396,7 @@ async function handlePrepareConfirmCallback(callbackQuery, parsed) {
     return;
   }
 
-  await answerCallbackQuery(callbackQuery.id, 'جارٍ تحديث حالة الطلب...');
+  await answerCallbackQuery(callbackQuery.id);
 
   try {
     const data = await markOrderPreparing(chatId, parsed.serial);
@@ -1429,7 +1427,7 @@ async function handleCancelRequestCallback(callbackQuery, parsed) {
     return;
   }
 
-  await answerCallbackQuery(callbackQuery.id, 'أرسل الآن سبب إلغاء الطلب.');
+  await answerCallbackQuery(callbackQuery.id);
 
   try {
     const prompt = await sendForceReplyMessage(chatId, buildCancelPromptMessage(parsed.serial), 'سبب الإلغاء', {
@@ -1460,9 +1458,7 @@ async function handleDeliverRequestCallback(callbackQuery, parsed) {
     return;
   }
 
-  await answerCallbackQuery(callbackQuery.id, 'تأكيد التسليم يعني أن الطلب وصل وتم استلام المبلغ.', {
-    show_alert: true,
-  });
+  await answerCallbackQuery(callbackQuery.id);
 
   await sendHtmlMessage(chatId, buildDeliverConfirmMessage(parsed.serial), {
     reply_to_message_id: sourceMessageId,
@@ -1478,7 +1474,7 @@ async function handleDeliverConfirmCallback(callbackQuery, parsed) {
     return;
   }
 
-  await answerCallbackQuery(callbackQuery.id, 'اكتب الآن اسم المندوب في رد مباشر خلال 5 دقائق.');
+  await answerCallbackQuery(callbackQuery.id);
 
   try {
     const prompt = await sendForceReplyMessage(chatId, buildDeliveryPromptMessage(parsed.serial), 'اسم المندوب', {
@@ -1515,7 +1511,7 @@ async function handleDismissCallback(callbackQuery) {
     return;
   }
 
-  await answerCallbackQuery(callbackQuery.id, 'تم التراجع.');
+  await answerCallbackQuery(callbackQuery.id);
   await safeEditHtmlMessage(chatId, messageId, buildDismissedMessage(), {
     reply_markup: EMPTY_INLINE_KEYBOARD,
   });
@@ -1598,7 +1594,7 @@ async function handleCallbackQuery(callbackQuery) {
       return;
     }
 
-    await answerCallbackQuery(callbackQuery.id, 'الإجراء غير معروف.');
+    await answerCallbackQuery(callbackQuery.id);
   } catch (error) {
     console.error('telegram.callback error', error);
 
