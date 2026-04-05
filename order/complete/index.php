@@ -4,7 +4,15 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/_bootstrap.php';
 
-$completion = order_consume_completion();
+$completionToken = order_normalize_flow_token($_GET['completion'] ?? null);
+if ($completionToken === null) {
+    $currentCompletionToken = order_current_completion_token();
+    if ($currentCompletionToken !== null) {
+        order_redirect('/order/complete/?completion=' . rawurlencode($currentCompletionToken), 303);
+    }
+}
+
+$completion = order_consume_completion($completionToken);
 if (!is_array($completion)) {
     order_flash('error', 'Start your order from the cart first.');
     order_redirect('/');

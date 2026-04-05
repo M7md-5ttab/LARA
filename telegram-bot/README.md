@@ -329,6 +329,15 @@ curl -X POST "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook" \
   }'
 ```
 
+<!-- Marvel bot  -->
+curl -X POST "https://api.telegram.org/bot8734550946:AAF369Kk609-peHZxeZjtUhP3GDjagE3hNY/setWebhook" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://notify-admins.vercel.app/api"
+  }'
+
+
+
 If you did not set `TELEGRAM_WEBHOOK_SECRET` explicitly, use the derived value instead.
 
 Check the result:

@@ -222,7 +222,10 @@ final class MenuRepository
     {
         return $this->transaction(function () use ($categoryId, $subcategoryData): void {
             $this->requireCategory($categoryId);
-            $this->assertSubcategoryDoesNotExist((string) $subcategoryData['id']);
+            $subcategoryId = array_key_exists('id', $subcategoryData)
+                ? (string) $subcategoryData['id']
+                : $this->nextSubcategoryId();
+            $this->assertSubcategoryDoesNotExist($subcategoryId);
 
             $statement = $this->pdo->prepare(
                 'INSERT INTO subcategories (id, category_id, label, sort_order, filter_sort_order)
@@ -230,7 +233,7 @@ final class MenuRepository
             );
 
             $statement->execute([
-                'id' => (string) $subcategoryData['id'],
+                'id' => $subcategoryId,
                 'category_id' => $categoryId,
                 'label' => (string) $subcategoryData['label'],
                 'sort_order' => $this->nextSubcategorySortOrder($categoryId),
@@ -242,7 +245,9 @@ final class MenuRepository
     public function createCategory(array $categoryData): Menu
     {
         return $this->transaction(function () use ($categoryData): void {
-            $categoryId = (string) $categoryData['id'];
+            $categoryId = array_key_exists('id', $categoryData)
+                ? (string) $categoryData['id']
+                : $this->nextCategoryId();
             $this->assertCategoryDoesNotExist($categoryId);
 
             $statement = $this->pdo->prepare(
@@ -343,6 +348,27 @@ final class MenuRepository
             $statement->execute([
                 'id' => $categoryId,
                 'label' => (string) $patch['label'],
+            ]);
+        });
+    }
+
+    public function deleteCategory(string $categoryId): Menu
+    {
+        return $this->transaction(function () use ($categoryId): void {
+            $categoryRow = $this->requireCategory($categoryId);
+
+            $deleteStatement = $this->pdo->prepare('DELETE FROM categories WHERE id = :id');
+            $deleteStatement->execute([
+                'id' => $categoryId,
+            ]);
+
+            $shiftStatement = $this->pdo->prepare(
+                'UPDATE categories
+                 SET sort_order = sort_order - 1
+                 WHERE sort_order > :sort_order'
+            );
+            $shiftStatement->execute([
+                'sort_order' => (int) $categoryRow['sort_order'],
             ]);
         });
     }
@@ -508,6 +534,28 @@ final class MenuRepository
     {
         $statement = $this->pdo->query('SELECT COALESCE(MAX(sort_order), 0) + 1 FROM categories');
         return (int) $statement->fetchColumn();
+    }
+
+    private function nextCategoryId(): string
+    {
+        $statement = $this->pdo->query(
+            "SELECT COALESCE(MAX(CAST(id AS UNSIGNED)), 0) + 1
+             FROM categories
+             WHERE id REGEXP '^[0-9]+$'"
+        );
+
+        return (string) $statement->fetchColumn();
+    }
+
+    private function nextSubcategoryId(): string
+    {
+        $statement = $this->pdo->query(
+            "SELECT COALESCE(MAX(CAST(id AS UNSIGNED)), 0) + 1
+             FROM subcategories
+             WHERE id REGEXP '^[0-9]+$'"
+        );
+
+        return (string) $statement->fetchColumn();
     }
 
     private function nextFilterSortOrder(): int

@@ -30,7 +30,7 @@ header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('Referrer-Policy: strict-origin-when-cross-origin');
 header('Permissions-Policy: geolocation=(), camera=(), microphone=()');
-HttpCache::applyPrivatePage();
+HttpCache::applyNoStore();
 $formActionSources = implode(' ', order_csp_form_action_sources());
 header(
     "Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; "
@@ -151,31 +151,156 @@ function order_json(array $payload, int $status = 200): void
     exit;
 }
 
-function order_set_draft(array $draft): void
+function order_issue_flow_token(): string
 {
-    $_SESSION['order_draft'] = $draft;
+    return bin2hex(random_bytes(24));
 }
 
-function order_get_draft(): ?array
+function order_normalize_flow_token(mixed $value): ?string
 {
-    $draft = $_SESSION['order_draft'] ?? null;
+    if (!is_string($value)) {
+        return null;
+    }
+
+    $normalized = strtolower(trim($value));
+    if ($normalized === '' || preg_match('/^[a-f0-9]{48}$/', $normalized) !== 1) {
+        return null;
+    }
+
+    return $normalized;
+}
+
+function order_current_draft_token(): ?string
+{
+    return order_normalize_flow_token($_SESSION['order_current_draft_token'] ?? null);
+}
+
+function order_current_completion_token(): ?string
+{
+    return order_normalize_flow_token($_SESSION['order_current_completion_token'] ?? null);
+}
+
+function order_set_draft(array $draft, ?string $token = null): string
+{
+    $resolvedToken = order_normalize_flow_token($token) ?? order_issue_flow_token();
+    $drafts = $_SESSION['order_drafts'] ?? [];
+    if (!is_array($drafts)) {
+        $drafts = [];
+    }
+
+    $drafts[$resolvedToken] = $draft;
+    if (count($drafts) > 8) {
+        $drafts = array_slice($drafts, -8, null, true);
+    }
+
+    $_SESSION['order_drafts'] = $drafts;
+    $_SESSION['order_current_draft_token'] = $resolvedToken;
+
+    return $resolvedToken;
+}
+
+function order_get_draft(?string $token = null): ?array
+{
+    $resolvedToken = order_normalize_flow_token($token) ?? order_current_draft_token();
+    if ($resolvedToken === null) {
+        return null;
+    }
+
+    $drafts = $_SESSION['order_drafts'] ?? null;
+    if (!is_array($drafts)) {
+        return null;
+    }
+
+    $draft = $drafts[$resolvedToken] ?? null;
+
     return is_array($draft) ? $draft : null;
 }
 
-function order_clear_draft(): void
+function order_clear_draft(?string $token = null): void
 {
-    unset($_SESSION['order_draft']);
+    $drafts = $_SESSION['order_drafts'] ?? null;
+    if (!is_array($drafts) || $drafts === []) {
+        unset($_SESSION['order_drafts'], $_SESSION['order_current_draft_token']);
+        return;
+    }
+
+    $resolvedToken = order_normalize_flow_token($token) ?? order_current_draft_token();
+    if ($resolvedToken === null) {
+        unset($_SESSION['order_drafts'], $_SESSION['order_current_draft_token']);
+        return;
+    }
+
+    unset($drafts[$resolvedToken]);
+
+    if ($drafts === []) {
+        unset($_SESSION['order_drafts'], $_SESSION['order_current_draft_token']);
+        return;
+    }
+
+    $_SESSION['order_drafts'] = $drafts;
+
+    $currentToken = order_current_draft_token();
+    if ($currentToken === null || !isset($drafts[$currentToken]) || $currentToken === $resolvedToken) {
+        end($drafts);
+        $nextToken = key($drafts);
+        if (is_string($nextToken) && $nextToken !== '') {
+            $_SESSION['order_current_draft_token'] = $nextToken;
+        } else {
+            unset($_SESSION['order_current_draft_token']);
+        }
+    }
 }
 
-function order_set_completion(array $payload): void
+function order_set_completion(array $payload, ?string $token = null): string
 {
-    $_SESSION['order_completion'] = $payload;
+    $resolvedToken = order_normalize_flow_token($token) ?? order_issue_flow_token();
+    $completions = $_SESSION['order_completions'] ?? [];
+    if (!is_array($completions)) {
+        $completions = [];
+    }
+
+    $completions[$resolvedToken] = $payload;
+    if (count($completions) > 8) {
+        $completions = array_slice($completions, -8, null, true);
+    }
+
+    $_SESSION['order_completions'] = $completions;
+    $_SESSION['order_current_completion_token'] = $resolvedToken;
+
+    return $resolvedToken;
 }
 
-function order_consume_completion(): ?array
+function order_consume_completion(?string $token = null): ?array
 {
-    $completion = $_SESSION['order_completion'] ?? null;
-    unset($_SESSION['order_completion']);
+    $resolvedToken = order_normalize_flow_token($token) ?? order_current_completion_token();
+    if ($resolvedToken === null) {
+        return null;
+    }
+
+    $completions = $_SESSION['order_completions'] ?? null;
+    if (!is_array($completions)) {
+        return null;
+    }
+
+    $completion = $completions[$resolvedToken] ?? null;
+    unset($completions[$resolvedToken]);
+
+    if ($completions === []) {
+        unset($_SESSION['order_completions'], $_SESSION['order_current_completion_token']);
+    } else {
+        $_SESSION['order_completions'] = $completions;
+
+        $currentToken = order_current_completion_token();
+        if ($currentToken === null || !isset($completions[$currentToken]) || $currentToken === $resolvedToken) {
+            end($completions);
+            $nextToken = key($completions);
+            if (is_string($nextToken) && $nextToken !== '') {
+                $_SESSION['order_current_completion_token'] = $nextToken;
+            } else {
+                unset($_SESSION['order_current_completion_token']);
+            }
+        }
+    }
 
     return is_array($completion) ? $completion : null;
 }

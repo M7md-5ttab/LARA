@@ -57,13 +57,17 @@ final class MenuService
                 throw new RuntimeException('Missing subcategory data.');
             }
 
-            $subcategoryId = $this->sanitizeId((string) ($subcategory['id'] ?? ''));
             $label = $this->sanitizeLabel((string) ($subcategory['label'] ?? ''), 'Subcategory label');
+            $subcategoryId = trim((string) ($subcategory['id'] ?? ''));
 
-            return $this->repository->createSubcategory($categoryId, [
-                'id' => $subcategoryId,
+            $subcategoryData = [
                 'label' => $label,
-            ]);
+            ];
+            if ($subcategoryId !== '') {
+                $subcategoryData['id'] = $this->sanitizeId($subcategoryId);
+            }
+
+            return $this->repository->createSubcategory($categoryId, $subcategoryData);
         }
 
         if ($action === 'create_category') {
@@ -72,10 +76,15 @@ final class MenuService
                 throw new RuntimeException('Missing category data.');
             }
 
-            return $this->repository->createCategory([
-                'id' => $this->sanitizeId((string) ($category['id'] ?? '')),
+            $categoryId = trim((string) ($category['id'] ?? ''));
+            $categoryData = [
                 'label' => $this->sanitizeLabel((string) ($category['label'] ?? ''), 'Category label'),
-            ]);
+            ];
+            if ($categoryId !== '') {
+                $categoryData['id'] = $this->sanitizeId($categoryId);
+            }
+
+            return $this->repository->createCategory($categoryData);
         }
 
         if ($action === 'update_subcategory') {
@@ -116,6 +125,11 @@ final class MenuService
             return $this->repository->updateCategory($categoryId, [
                 'label' => $this->sanitizeLabel((string) $patch['label'], 'Category label'),
             ]);
+        }
+
+        if ($action === 'delete_category') {
+            $categoryId = $this->sanitizeId((string) ($payload['category_id'] ?? ''));
+            return $this->repository->deleteCategory($categoryId);
         }
 
         throw new RuntimeException('Unknown action.');
@@ -212,8 +226,8 @@ final class MenuService
     {
         $id = trim($id);
 
-        if (!preg_match('/^[a-z0-9_-]{2,32}$/', $id)) {
-            throw new RuntimeException('Invalid id. Use 2-32 chars: a-z, 0-9, _ or -');
+        if (!preg_match('/^[a-z0-9_-]{1,32}$/', $id)) {
+            throw new RuntimeException('Invalid id. Use 1-32 chars: a-z, 0-9, _ or -');
         }
 
         if ($id === 'all') {

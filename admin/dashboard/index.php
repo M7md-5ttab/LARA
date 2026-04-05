@@ -236,15 +236,11 @@ $username = (string) ($_SESSION['admin_username'] ?? 'admin');
       <div class="modal-head">
         <div>
           <div class="modal-title" id="subcategory-modal-title">Subcategory</div>
-          <div class="modal-sub" id="subcategory-modal-sub">Edit subcategory.</div>
+          <div class="modal-sub" id="subcategory-modal-sub">Edit subcategory. IDs are generated automatically.</div>
         </div>
         <button class="icon-btn" type="button" data-close="1" aria-label="Close">×</button>
       </div>
       <form class="modal-body" id="subcategory-form">
-        <label class="field" id="subcategory-id-field">
-          <span class="field-label">Subcategory ID</span>
-          <input class="field-input" name="subcategory_id" type="text" placeholder="e.g. espresso" required />
-        </label>
         <label class="field">
           <span class="field-label">Label</span>
           <input class="field-input" name="label" type="text" required />
@@ -271,20 +267,17 @@ $username = (string) ($_SESSION['admin_username'] ?? 'admin');
       <div class="modal-head">
         <div>
           <div class="modal-title" id="category-modal-title">Category</div>
-          <div class="modal-sub" id="category-modal-sub">Rename a main category.</div>
+          <div class="modal-sub" id="category-modal-sub">Rename a main category. IDs are generated automatically.</div>
         </div>
         <button class="icon-btn" type="button" data-close="1" aria-label="Close">×</button>
       </div>
       <form class="modal-body" id="category-form">
-        <label class="field" id="category-id-field">
-          <span class="field-label">Category ID</span>
-          <input class="field-input" name="category_id" type="text" placeholder="e.g. hot_drinks" required />
-        </label>
         <label class="field">
           <span class="field-label">Label</span>
           <input class="field-input" name="label" type="text" required />
         </label>
         <div class="modal-actions">
+          <button class="btn btn-danger" type="button" id="category-delete-btn">Delete</button>
           <div class="spacer"></div>
           <button class="btn btn-ghost" type="button" data-close="1">Cancel</button>
           <button class="btn btn-primary" type="submit" id="category-save-btn">Save</button>
