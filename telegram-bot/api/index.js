@@ -1,10 +1,15 @@
 'use strict';
 
 const crypto = require('node:crypto');
+const fs = require('node:fs');
+const path = require('node:path');
 
-const BUILD_VERSION = '2026-03-30-arabic-order-workflow-v1';
-const TELEGRAM_TOKEN_OVERRIDE = '8717313831:AAHjMcIbJUKf_ycu1DwNf2MIWrGVQiMc3ig';
-const LARA_APP_URL_OVERRIDE = 'https://marvelitayalbaroud.rf.gd';
+const BUILD_VERSION = '2026-04-01-code-override-debug';
+// Temporary debug overrides. Remove these after Vercel env vars are fixed.
+const CONFIG_OVERRIDES = {
+  TELEGRAM_BOT_TOKEN: '8717313831:AAHjMcIbJUKf_ycu1DwNf2MIWrGVQiMc3ig',
+  LARA_APP_URL: 'https://darkgoldenrod-woodcock-943182.hostingersite.com',
+};
 const RTL = '\u200F';
 const EMPTY_INLINE_KEYBOARD = { inline_keyboard: [] };
 const STATE_CANCEL_REASON = 'awaiting_cancel_reason';
@@ -48,6 +53,7 @@ const COMMAND_DEFINITIONS = {
   },
 };
 const REQUIRED_WEBHOOK_UPDATES = ['message', 'edited_message', 'callback_query'];
+const LOCAL_ENV = loadLocalEnvFiles();
 
 let publicCommandsSyncPromise = null;
 let publicCommandsSyncedAt = 0;
@@ -56,8 +62,133 @@ let webhookSyncedAt = 0;
 let lastWebhookInfo = null;
 const chatCommandsSyncCache = new Map();
 
+function normalizeConfigScalar(value) {
+  let normalized = String(value || '').trim();
+
+  while (
+    normalized.length >= 2
+    && (
+      (normalized.startsWith('"') && normalized.endsWith('"'))
+      || (normalized.startsWith('\'') && normalized.endsWith('\''))
+    )
+  ) {
+    normalized = normalized.slice(1, -1).trim();
+  }
+
+  return normalized;
+}
+
+function normalizeTelegramToken(value) {
+  const normalized = normalizeConfigScalar(value);
+  if (!normalized) {
+    return '';
+  }
+
+  const embeddedMatch = normalized.match(/\d{6,}:[A-Za-z0-9_-]{20,}/);
+  if (embeddedMatch && embeddedMatch[0]) {
+    return embeddedMatch[0];
+  }
+
+  const urlMatch = normalized.match(/(?:https?:\/\/api\.telegram\.org\/)?bot([^/?#]+)(?:[/?#]|$)/i);
+  if (urlMatch && urlMatch[1]) {
+    return normalizeConfigScalar(urlMatch[1]);
+  }
+
+  if (/^bot\d+:/i.test(normalized)) {
+    return normalized.slice(3).trim();
+  }
+
+  return normalized;
+}
+
+function parseEnvFile(content) {
+  const values = {};
+  const lines = String(content || '').split(/\r\n|\r|\n/);
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) {
+      continue;
+    }
+
+    const match = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+    if (!match) {
+      continue;
+    }
+
+    const key = match[1];
+    values[key] = normalizeConfigScalar(match[2] || '');
+  }
+
+  return values;
+}
+
+function loadLocalEnvFiles() {
+  const files = [
+    path.resolve(__dirname, '../.env'),
+    path.resolve(__dirname, '../../.env'),
+  ];
+  const values = {};
+
+  for (const file of files) {
+    if (!fs.existsSync(file)) {
+      continue;
+    }
+
+    try {
+      const parsed = parseEnvFile(fs.readFileSync(file, 'utf8'));
+      for (const [key, value] of Object.entries(parsed)) {
+        if (!(key in values)) {
+          values[key] = value;
+        }
+      }
+    } catch (error) {
+      console.error('telegram.local env load error', file, error);
+    }
+  }
+
+  return values;
+}
+
+function getConfigValue(keys) {
+  for (const key of keys) {
+    const overrideValue = normalizeConfigScalar(CONFIG_OVERRIDES[key] || '');
+    if (overrideValue) {
+      return {
+        value: overrideValue,
+        source: `code_override:${key}`,
+      };
+    }
+
+    const processValue = normalizeConfigScalar(process.env[key] || '');
+    if (processValue) {
+      return {
+        value: processValue,
+        source: `process.env:${key}`,
+      };
+    }
+
+    const localValue = normalizeConfigScalar(LOCAL_ENV[key] || '');
+    if (localValue) {
+      return {
+        value: localValue,
+        source: `local_env_file:${key}`,
+      };
+    }
+  }
+
+  return {
+    value: '',
+    source: 'missing',
+  };
+}
+
 function getTelegramToken() {
-  return String(TELEGRAM_TOKEN_OVERRIDE || process.env.TELEGRAM_BOT_TOKEN || process.env.TELEGRAM_TOKEN || '').trim();
+  return normalizeTelegramToken(getConfigValue(['TELEGRAM_BOT_TOKEN', 'TELEGRAM_TOKEN']).value);
+}
+
+function getTelegramTokenSource() {
+  return getConfigValue(['TELEGRAM_BOT_TOKEN', 'TELEGRAM_TOKEN']).source;
 }
 
 function getBridgeSecret() {
@@ -76,13 +207,11 @@ function ensureConfigured() {
 }
 
 function getAppBaseUrl() {
-  return String(
-    LARA_APP_URL_OVERRIDE
-      || process.env.LARA_APP_URL
-      || process.env.APP_URL
-      || process.env.SAKAN_APP_URL
-      || ''
-  ).trim().replace(/\/+$/, '');
+  return getConfigValue(['LARA_APP_URL', 'APP_URL', 'SAKAN_APP_URL']).value.replace(/\/+$/, '');
+}
+
+function getAppBaseUrlSource() {
+  return getConfigValue(['LARA_APP_URL', 'APP_URL', 'SAKAN_APP_URL']).source;
 }
 
 function escapeHtml(value) {
@@ -1251,9 +1380,7 @@ async function handlePrepareRequestCallback(callbackQuery, parsed) {
     return;
   }
 
-  await answerCallbackQuery(callbackQuery.id, 'تجهيز الطلب يعني أن الطلب دخل مرحلة التحضير.', {
-    show_alert: true,
-  });
+  await answerCallbackQuery(callbackQuery.id);
 
   await sendHtmlMessage(chatId, buildPrepareConfirmMessage(parsed.serial), {
     reply_to_message_id: sourceMessageId,
@@ -1269,7 +1396,7 @@ async function handlePrepareConfirmCallback(callbackQuery, parsed) {
     return;
   }
 
-  await answerCallbackQuery(callbackQuery.id, 'جارٍ تحديث حالة الطلب...');
+  await answerCallbackQuery(callbackQuery.id);
 
   try {
     const data = await markOrderPreparing(chatId, parsed.serial);
@@ -1300,7 +1427,7 @@ async function handleCancelRequestCallback(callbackQuery, parsed) {
     return;
   }
 
-  await answerCallbackQuery(callbackQuery.id, 'أرسل الآن سبب إلغاء الطلب.');
+  await answerCallbackQuery(callbackQuery.id);
 
   try {
     const prompt = await sendForceReplyMessage(chatId, buildCancelPromptMessage(parsed.serial), 'سبب الإلغاء', {
@@ -1331,9 +1458,7 @@ async function handleDeliverRequestCallback(callbackQuery, parsed) {
     return;
   }
 
-  await answerCallbackQuery(callbackQuery.id, 'تأكيد التسليم يعني أن الطلب وصل وتم استلام المبلغ.', {
-    show_alert: true,
-  });
+  await answerCallbackQuery(callbackQuery.id);
 
   await sendHtmlMessage(chatId, buildDeliverConfirmMessage(parsed.serial), {
     reply_to_message_id: sourceMessageId,
@@ -1349,7 +1474,7 @@ async function handleDeliverConfirmCallback(callbackQuery, parsed) {
     return;
   }
 
-  await answerCallbackQuery(callbackQuery.id, 'اكتب الآن اسم المندوب في رد مباشر خلال 5 دقائق.');
+  await answerCallbackQuery(callbackQuery.id);
 
   try {
     const prompt = await sendForceReplyMessage(chatId, buildDeliveryPromptMessage(parsed.serial), 'اسم المندوب', {
@@ -1386,7 +1511,7 @@ async function handleDismissCallback(callbackQuery) {
     return;
   }
 
-  await answerCallbackQuery(callbackQuery.id, 'تم التراجع.');
+  await answerCallbackQuery(callbackQuery.id);
   await safeEditHtmlMessage(chatId, messageId, buildDismissedMessage(), {
     reply_markup: EMPTY_INLINE_KEYBOARD,
   });
@@ -1469,7 +1594,7 @@ async function handleCallbackQuery(callbackQuery) {
       return;
     }
 
-    await answerCallbackQuery(callbackQuery.id, 'الإجراء غير معروف.');
+    await answerCallbackQuery(callbackQuery.id);
   } catch (error) {
     console.error('telegram.callback error', error);
 
@@ -1802,11 +1927,16 @@ module.exports = async (req, res) => {
       configured: {
         telegram_token: Boolean(getTelegramToken()),
         app_url: Boolean(getAppBaseUrl()),
+        app_base_url: getAppBaseUrl(),
         bridge_secret: Boolean(getBridgeSecret()),
+        missing: [
+          ...(!getTelegramToken() ? ['TELEGRAM_BOT_TOKEN|TELEGRAM_TOKEN'] : []),
+          ...(!getAppBaseUrl() ? ['LARA_APP_URL|APP_URL|SAKAN_APP_URL'] : []),
+        ],
       },
       public_commands: DEFAULT_PUBLIC_COMMANDS.map((item) => `/${item.command}`),
-      token_source: TELEGRAM_TOKEN_OVERRIDE ? 'code_override' : 'env',
-      app_url_source: LARA_APP_URL_OVERRIDE ? 'code_override' : 'env',
+      token_source: getTelegramTokenSource(),
+      app_url_source: getAppBaseUrlSource(),
       bot,
       bot_error: botError,
       webhook,
@@ -1843,10 +1973,20 @@ module.exports = async (req, res) => {
   if (typeof body.update_id === 'number') {
     try {
       await syncPublicCommands();
+    } catch (error) {
+      console.error('telegram.update commands sync error', error);
+    }
+
+    try {
       await syncWebhook(req);
+    } catch (error) {
+      console.error('telegram.update webhook sync error', error);
+    }
+
+    try {
       await handleTelegramUpdate(body);
     } catch (error) {
-      console.error('telegram.update error', error);
+      console.error('telegram.update handle error', error);
     }
 
     return json(res, 200, { ok: true });

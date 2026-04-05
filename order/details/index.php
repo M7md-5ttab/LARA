@@ -4,8 +4,16 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/_bootstrap.php';
 
+$draftToken = order_normalize_flow_token($_POST['draft_token'] ?? $_GET['draft'] ?? null);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $draftToken === null) {
+    $currentDraftToken = order_current_draft_token();
+    if ($currentDraftToken !== null) {
+        order_redirect('/order/details/?draft=' . rawurlencode($currentDraftToken), 303);
+    }
+}
+
 $flash = order_consume_flash();
-$draft = order_get_draft();
+$draft = order_get_draft($draftToken);
 
 if ($draft === null) {
     order_flash('error', 'Start your order from the cart first.');
@@ -18,14 +26,14 @@ try {
     $originalSerialNumber = (int) ($draft['serial_number'] ?? -1);
     $draft = $service->stabilizeDraft($draft);
     if ((int) $draft['serial_number'] !== $originalSerialNumber) {
-        order_set_draft($draft);
+        $draftToken = order_set_draft($draft, $draftToken);
         $flash = [
             'type' => 'success',
             'message' => 'Your order serial was refreshed to keep it unique.',
         ];
     }
 } catch (Throwable $exception) {
-    order_clear_draft();
+    order_clear_draft($draftToken);
     order_flash('error', $exception->getMessage());
     order_redirect('/');
 }
@@ -47,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         order_require_csrf();
         $result = $service->submitDraft($draft, $_POST, order_base_url());
-        order_clear_draft();
+        order_clear_draft($draftToken);
 
         try {
             $notificationService = new TelegramNotificationService();
@@ -56,17 +64,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             error_log('Telegram order notification failed: ' . $notificationException->getMessage());
         }
 
-        order_set_completion([
+        $completionToken = order_set_completion([
             'serial' => (string) $result['order']->serial,
             'status' => (string) $result['order']->status,
             'order_url' => $service->buildPublicOrderUrl($result['order'], order_base_url()),
             'whatsapp_url' => (string) $result['whatsapp_url'],
         ]);
-        order_redirect('/order/complete/', 303);
+        order_redirect('/order/complete/?completion=' . rawurlencode($completionToken), 303);
     } catch (Throwable $exception) {
         $error = $exception->getMessage();
     }
 }
+
+$draftQuery = $draftToken !== null ? '?draft=' . rawurlencode($draftToken) : '';
 
 ?>
 <!DOCTYPE html>
@@ -92,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <small>Patisserie &amp; Cafe</small>
         </span>
       </a>
-      <a class="order-back" href="/order/review/">Back to receipt</a>
+      <a class="order-back" href="/order/review/<?= e($draftQuery) ?>">Back to receipt</a>
     </div>
 
     <?php if (is_array($flash) && (($flash['message'] ?? '') !== '')): ?>
@@ -130,8 +140,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="order-detail-grid">
           <div class="order-panel">
-            <form class="order-form" method="post" action="">
+            <form class="order-form" method="post" action="<?= e('/order/details/' . $draftQuery) ?>">
               <input type="hidden" name="csrf_token" value="<?= e(order_csrf_token()) ?>">
+              <input type="hidden" name="draft_token" value="<?= e((string) $draftToken) ?>">
 
               <label class="order-field">
                 <span class="order-field-label">Name</span>
@@ -156,7 +167,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               </div>
 
               <div class="order-actions">
-                <a class="order-btn order-btn-ghost" href="/order/review/">Back</a>
+                <a class="order-btn order-btn-ghost" href="/order/review/<?= e($draftQuery) ?>">Back</a>
                 <button class="order-btn order-btn-primary" type="submit">Submit the order</button>
               </div>
             </form>

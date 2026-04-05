@@ -205,6 +205,7 @@ LARA_APP_URL=https://your-php-app.example.com
 ```
 
 You may use `APP_URL` instead of `LARA_APP_URL`, but `LARA_APP_URL` is clearer for this bot deployment.
+Paste both values as raw text in Vercel. Do not wrap them in `'quotes'` or `"quotes"`.
 
 ### Optional
 
@@ -327,6 +328,15 @@ curl -X POST "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook" \
     "allowed_updates": ["message", "edited_message", "callback_query"]
   }'
 ```
+
+<!-- Marvel bot  -->
+curl -X POST "https://api.telegram.org/bot8734550946:AAF369Kk609-peHZxeZjtUhP3GDjagE3hNY/setWebhook" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://notify-admins.vercel.app/api"
+  }'
+
+
 
 If you did not set `TELEGRAM_WEBHOOK_SECRET` explicitly, use the derived value instead.
 
@@ -489,6 +499,8 @@ Check:
 - the chat ID was added in `/admin/settings/telegram/`
 - the recipient is active
 - the correct permission checkbox is enabled
+- `GET /api` on the bot shows the same `configured.app_base_url` as the PHP app where you saved the chat ID
+- the bot is not pointing at a different deployment or database than the admin dashboard you used
 
 ### New order notifications do not arrive
 

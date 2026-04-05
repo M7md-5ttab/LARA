@@ -23,12 +23,11 @@ try {
 
     $service = new OrderService();
     $draft = $service->startDraft($payload);
-
-    order_set_draft($draft);
+    $draftToken = order_set_draft($draft);
 
     order_json([
         'ok' => true,
-        'redirect_url' => '/order/review/',
+        'redirect_url' => '/order/review/?draft=' . rawurlencode($draftToken),
     ]);
 } catch (Throwable $exception) {
     order_json([

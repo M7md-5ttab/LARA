@@ -47,7 +47,6 @@
 
   const subModal = document.getElementById('subcategory-modal');
   const subForm = document.getElementById('subcategory-form');
-  const subIdField = document.getElementById('subcategory-id-field');
   const subCategorySelect = document.getElementById('subcategory-category');
   const subDeleteBtn = document.getElementById('subcategory-delete-btn');
 
@@ -55,7 +54,7 @@
   const catForm = document.getElementById('category-form');
   const catModalTitle = document.getElementById('category-modal-title');
   const catModalSub = document.getElementById('category-modal-sub');
-  const catIdField = document.getElementById('category-id-field');
+  const catDeleteBtn = document.getElementById('category-delete-btn');
   const catSaveBtn = document.getElementById('category-save-btn');
 
   const state = {
@@ -500,7 +499,7 @@
       ? `${subLabel} Items`
       : (category ? `${catLabel} Setup` : 'Items');
     elPanelSub.textContent = subcategory
-      ? `Editing ${subcategory.id}`
+      ? `Editing ${subcategory.label || 'subcategory'}`
       : (category ? 'Add a subcategory to start editing items.' : 'Create a main category to start building the menu.');
 
     const items = subcategory?.items || [];
@@ -692,14 +691,12 @@
         return;
       }
 
-      subIdField.hidden = false;
       subDeleteBtn.hidden = true;
       subForm.elements.category_id.value = preferredCategoryId || state.selected.categoryId || subCategorySelect.options[0]?.value || '';
       openModal(subModal);
       return;
     }
 
-    subIdField.hidden = true;
     subDeleteBtn.hidden = false;
 
     const { category, subcategory } = findSubcategoryLocation(state.menu, subcategoryId);
@@ -708,7 +705,6 @@
       return;
     }
 
-    subForm.elements.subcategory_id.value = subcategory.id;
     subForm.elements.label.value = subcategory.label || subcategory.id;
     subForm.elements.category_id.value = category?.id || '';
 
@@ -721,10 +717,8 @@
 
     if (mode === 'create') {
       if (catModalTitle) catModalTitle.textContent = 'New Main Category';
-      if (catModalSub) catModalSub.textContent = 'Create a top-level menu group for related subcategories.';
-      if (catIdField) catIdField.hidden = false;
-      catForm.elements.category_id.readOnly = false;
-      catForm.elements.category_id.value = '';
+      if (catModalSub) catModalSub.textContent = 'Create a top-level menu group. The ID is generated automatically.';
+      if (catDeleteBtn) catDeleteBtn.hidden = true;
       catForm.elements.label.value = '';
       if (catSaveBtn) catSaveBtn.textContent = 'Create';
       openModal(catModal);
@@ -739,9 +733,7 @@
 
     if (catModalTitle) catModalTitle.textContent = 'Edit Main Category';
     if (catModalSub) catModalSub.textContent = 'Update the visible label for this main category.';
-    if (catIdField) catIdField.hidden = true;
-    catForm.elements.category_id.readOnly = true;
-    catForm.elements.category_id.value = categoryId;
+    if (catDeleteBtn) catDeleteBtn.hidden = false;
     catForm.elements.label.value = cat.label || cat.id;
     if (catSaveBtn) catSaveBtn.textContent = 'Save';
 
@@ -998,14 +990,13 @@
 
     try {
       if (mode === 'create') {
-        const newId = subForm.elements.subcategory_id.value.trim();
         state.menu = await apiAction('create_subcategory', {
           category_id: categoryId,
-          subcategory: { id: newId, label },
+          subcategory: { label },
         });
         showToast('Subcategory created', 'ok');
         state.selected.categoryId = categoryId;
-        state.selected.subcategoryId = newId;
+        state.selected.subcategoryId = findCategory(state.menu, categoryId)?.subcategories?.slice(-1)[0]?.id || null;
         if (isMobileLayout()) setMobileView('editor');
       } else {
         state.menu = await apiAction('update_subcategory', {
@@ -1023,22 +1014,38 @@
     }
   });
 
+  catDeleteBtn?.addEventListener('click', async () => {
+    const { mode, categoryId } = state.catEditing;
+    if (mode !== 'edit' || !categoryId) return;
+    if (!confirm('Delete this main category and ALL its subcategories and items?')) return;
+    try {
+      state.menu = await apiAction('delete_category', { category_id: categoryId });
+      showToast('Category deleted', 'ok');
+      state.selected.categoryId = null;
+      state.selected.subcategoryId = null;
+      ensureSelection();
+      closeModal(catModal);
+      renderAll();
+    } catch (err) {
+      showToast(err.message || 'Failed', 'error');
+    }
+  });
+
   catForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const { mode, categoryId: editingCategoryId } = state.catEditing;
-    const categoryId = catForm.elements.category_id.value.trim();
     const label = catForm.elements.label.value.trim();
     try {
       if (mode === 'create') {
-        state.menu = await apiAction('create_category', { category: { id: categoryId, label } });
+        state.menu = await apiAction('create_category', { category: { label } });
         showToast('Category created', 'ok');
-        state.selected.categoryId = categoryId;
+        state.selected.categoryId = state.menu?.categories?.slice(-1)[0]?.id || null;
         state.selected.subcategoryId = null;
         if (isMobileLayout()) setMobileView('navigator');
       } else {
-        state.menu = await apiAction('update_category', { category_id: editingCategoryId || categoryId, patch: { label } });
+        state.menu = await apiAction('update_category', { category_id: editingCategoryId, patch: { label } });
         showToast('Category updated', 'ok');
-        state.selected.categoryId = editingCategoryId || categoryId;
+        state.selected.categoryId = editingCategoryId;
       }
 
       closeModal(catModal);

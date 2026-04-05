@@ -4,8 +4,16 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/_bootstrap.php';
 
+$draftToken = order_normalize_flow_token($_GET['draft'] ?? null);
+if ($draftToken === null) {
+    $currentDraftToken = order_current_draft_token();
+    if ($currentDraftToken !== null) {
+        order_redirect('/order/review/?draft=' . rawurlencode($currentDraftToken), 303);
+    }
+}
+
 $flash = order_consume_flash();
-$draft = order_get_draft();
+$draft = order_get_draft($draftToken);
 
 if ($draft === null) {
     order_flash('error', 'Start your order from the cart first.');
@@ -18,17 +26,19 @@ try {
     $originalSerialNumber = (int) ($draft['serial_number'] ?? -1);
     $draft = $service->stabilizeDraft($draft);
     if ((int) $draft['serial_number'] !== $originalSerialNumber) {
-        order_set_draft($draft);
+        $draftToken = order_set_draft($draft, $draftToken);
         $flash = [
             'type' => 'success',
             'message' => 'Your order serial was refreshed to keep it unique.',
         ];
     }
 } catch (Throwable $exception) {
-    order_clear_draft();
+    order_clear_draft($draftToken);
     order_flash('error', $exception->getMessage());
     order_redirect('/');
 }
+
+$draftQuery = $draftToken !== null ? '?draft=' . rawurlencode($draftToken) : '';
 
 ?>
 <!DOCTYPE html>
@@ -118,7 +128,7 @@ try {
 
         <div class="order-actions">
           <a class="order-btn order-btn-ghost" href="/">Edit cart</a>
-          <a class="order-btn order-btn-primary" href="/order/details/">Continue to order details</a>
+          <a class="order-btn order-btn-primary" href="/order/details/<?= e($draftQuery) ?>">Continue to order details</a>
         </div>
       </div>
     </section>
